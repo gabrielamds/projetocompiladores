@@ -1,0 +1,10 @@
+int x;
+
+void main(void) {
+if (x > 2) {
+x = x - 1;
+}
+/* comentario de bloco */
+// comentario de linha
+$ x @ # ~
+}
