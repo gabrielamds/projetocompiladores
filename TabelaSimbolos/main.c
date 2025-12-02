@@ -11,13 +11,13 @@ int main() {
     // Tentativa de duplicata no mesmo escopo
     inserirSimbolo("x", "int", "global", 20); // Deve emitir aviso
 
-    // Buscando símbolos
+    // Buscando simbolos
     Simbolo *s = buscarSimbolo("a", "func1");
     if (s) {
-        printf("Encontrado símbolo: %s (tipo %s, escopo %s, linha %d)\n",
+        printf("Encontrado simbolo: %s (tipo %s, escopo %s, linha %d)\n",
             s->nome, s->tipo, s->escopo, s->linha);
     } else {
-        printf("Símbolo não encontrado!\n");
+        printf("Simbolo nao encontrado!\n");
     }
 
     // Imprimir tabela inteira

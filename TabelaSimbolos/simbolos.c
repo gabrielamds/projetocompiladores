@@ -9,7 +9,7 @@ static Simbolo *tabela = NULL; // lista ligada que representa a tabela
 void inserirSimbolo(char *nome, char *tipo, char *escopo, int linha) {
     // Verifica duplicidade no mesmo escopo (pode adaptar)
     if (buscarSimbolo(nome, escopo) != NULL) {
-        printf("Aviso: Simbolo '%s' já declarado no escopo '%s'\n", nome, escopo);
+        printf("Aviso: Simbolo '%s' ja declarado no escopo '%s'\n", nome, escopo);
         return;
     }
 
@@ -40,9 +40,9 @@ Simbolo* buscarSimbolo(char *nome, char *escopo) {
     return NULL;
 }
 
-// Imprime todos os símbolos na tabela
+// Imprime todos os simbolos na tabela
 void imprimirTabela(void) {
-    printf("\n=== TABELA DE SÍMBOLOS ===\n");
+    printf("\n=== TABELA DE SIMBOLOS ===\n");
     printf("%-15s %-10s %-15s %-5s\n", "Nome", "Tipo", "Escopo", "Linha");
     printf("----------------------------------------\n");
     Simbolo *atual = tabela;
