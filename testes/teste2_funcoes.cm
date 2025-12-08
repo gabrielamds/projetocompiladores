@@ -1,0 +1,30 @@
+/* ===========================================================================
+ * teste2_funcoes.cm - Teste de declaracao de funcoes
+ * ===========================================================================
+ * Este programa testa:
+ * - Declaracao de funcoes com parametros
+ * - Chamada de funcoes pre-definidas (input, output)
+ * - Funcao com retorno
+ * =========================================================================== */
+
+int x;
+
+/* Funcao que soma dois numeros */
+int soma(int a, int b) {
+    int resultado;
+    resultado = a + b;
+    return resultado;
+}
+
+/* Funcao principal */
+int main(void) {
+    int n1;
+    int n2;
+    int total;
+    
+    n1 = 10;
+    n2 = 20;
+    total = n1 + n2;
+    
+    return 0;
+}

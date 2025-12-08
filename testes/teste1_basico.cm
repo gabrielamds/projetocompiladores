@@ -1,0 +1,26 @@
+/* ===========================================================================
+ * teste1_basico.cm - Teste basico do compilador
+ * ===========================================================================
+ * Este programa testa:
+ * - Declaracao de variaveis globais
+ * - Declaracao de funcao main
+ * - Declaracao de variaveis locais
+ * - Atribuicoes simples
+ * - Operacoes aritmeticas
+ * - Comando return
+ * =========================================================================== */
+
+/* Variavel global */
+int x;
+
+/* Funcao principal */
+int main(void) {
+    int a;
+    int b;
+    
+    a = 5;
+    b = 10;
+    x = a + b;
+    
+    return 0;
+}

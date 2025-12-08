@@ -1,0 +1,15 @@
+/* ===========================================================================
+ * teste4_sem_main.cm - Teste de programa sem funcao main
+ * ===========================================================================
+ * Este programa NAO possui a funcao main().
+ * 
+ * ERRO ESPERADO:
+ * - ERRO SEMANTICO: funcao 'main' nao declarada LINHA: 0
+ * =========================================================================== */
+
+int x;
+
+int outra(void) {
+    x = 5;
+    return x;
+}

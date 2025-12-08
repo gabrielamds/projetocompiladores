@@ -1,0 +1,1185 @@
+State 26 conflicts: 7 shift/reduce
+State 38 conflicts: 7 shift/reduce
+State 89 conflicts: 1 shift/reduce
+
+
+Grammar
+
+    0 $accept: programa $end
+
+    1 programa: declaracao_lista
+
+    2 declaracao_lista: declaracao_lista declaracao
+    3                 | declaracao
+
+    4 declaracao: var_declaracao
+    5           | fun_declaracao
+
+    6 var_declaracao: tipo_especificador ID PONTOVIRGULA
+    7               | tipo_especificador ID ABRECOLCHETE NUM FECHACOLCHETE PONTOVIRGULA
+
+    8 tipo_especificador: INT
+    9                   | VOID
+
+   10 fun_declaracao: tipo_especificador ID ABREPARENTESES parametros FECHAPARENTESES corpo_funcao
+
+   11 parametros: VOID
+   12           | parametro_lista
+
+   13 parametro_lista: parametro_lista VIRGULA parametro
+   14                | parametro
+
+   15 parametro: tipo_especificador ID
+   16          | tipo_especificador ID ABRECOLCHETE FECHACOLCHETE
+
+   17 corpo_funcao: ABRECHAVE declaracao_lista comando_lista FECHACHAVE
+   18             | ABRECHAVE comando_lista FECHACHAVE
+
+   19 comando_lista: comando_lista comando
+   20              | comando
+   21              | ε
+
+   22 comando: expressao_comando
+   23        | selecao_comando
+   24        | iteracao_comando
+   25        | retorno_comando
+
+   26 expressao_comando: expressao PONTOVIRGULA
+   27                  | PONTOVIRGULA
+
+   28 selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando ELSE comando
+   29                | IF ABREPARENTESES expressao FECHAPARENTESES comando
+
+   30 iteracao_comando: WHILE ABREPARENTESES expressao FECHAPARENTESES comando
+
+   31 retorno_comando: RETURN PONTOVIRGULA
+   32                | RETURN expressao PONTOVIRGULA
+
+   33 expressao: var ATRIBUICAO expressao
+   34          | simples_expressao
+
+   35 simples_expressao: soma_expressao relacional soma_expressao
+   36                  | soma_expressao
+
+   37 relacional: MENOR
+   38           | MAIOR
+   39           | MENORIGUAL
+   40           | MAIORIGUAL
+   41           | IGUAL
+   42           | DIFERENTE
+
+   43 soma_expressao: soma_expressao MAIS termo
+   44               | soma_expressao MENOS termo
+   45               | termo
+
+   46 termo: termo VEZES fator
+   47      | termo DIVIDIDO fator
+   48      | fator
+
+   49 fator: ABREPARENTESES expressao FECHAPARENTESES
+   50      | var
+   51      | NUM
+
+   52 var: ID
+   53    | ID ABRECOLCHETE expressao FECHACOLCHETE
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    ID <str> (258) 6 7 10 15 16 52 53
+    NUM <num> (259) 7 51
+    IF (260) 28 29
+    ELSE (261) 28
+    WHILE (262) 30
+    RETURN (263) 31 32
+    INT (264) 8
+    VOID (265) 9 11
+    MAIS (266) 43
+    MENOS (267) 44
+    VEZES (268) 46
+    DIVIDIDO (269) 47
+    MENOR (270) 37
+    MAIOR (271) 38
+    MENORIGUAL (272) 39
+    MAIORIGUAL (273) 40
+    IGUAL (274) 41
+    DIFERENTE (275) 42
+    ATRIBUICAO (276) 33
+    ABREPARENTESES (277) 10 28 29 30 49
+    FECHAPARENTESES (278) 10 28 29 30 49
+    ABRECOLCHETE (279) 7 16 53
+    FECHACOLCHETE (280) 7 16 53
+    ABRECHAVE (281) 17 18
+    FECHACHAVE (282) 17 18
+    PONTOVIRGULA (283) 6 7 26 27 31 32
+    VIRGULA (284) 13
+
+
+Nonterminals, with rules where they appear
+
+    $accept (30)
+        on left: 0
+    programa <no> (31)
+        on left: 1
+        on right: 0
+    declaracao_lista <no> (32)
+        on left: 2 3
+        on right: 1 2 17
+    declaracao <no> (33)
+        on left: 4 5
+        on right: 2 3
+    var_declaracao <no> (34)
+        on left: 6 7
+        on right: 4
+    tipo_especificador <no> (35)
+        on left: 8 9
+        on right: 6 7 10 15 16
+    fun_declaracao <no> (36)
+        on left: 10
+        on right: 5
+    parametros <no> (37)
+        on left: 11 12
+        on right: 10
+    parametro_lista <no> (38)
+        on left: 13 14
+        on right: 12 13
+    parametro <no> (39)
+        on left: 15 16
+        on right: 13 14
+    corpo_funcao <no> (40)
+        on left: 17 18
+        on right: 10
+    comando_lista <no> (41)
+        on left: 19 20 21
+        on right: 17 18 19
+    comando <no> (42)
+        on left: 22 23 24 25
+        on right: 19 20 28 29 30
+    expressao_comando <no> (43)
+        on left: 26 27
+        on right: 22
+    selecao_comando <no> (44)
+        on left: 28 29
+        on right: 23
+    iteracao_comando <no> (45)
+        on left: 30
+        on right: 24
+    retorno_comando <no> (46)
+        on left: 31 32
+        on right: 25
+    expressao <no> (47)
+        on left: 33 34
+        on right: 26 28 29 30 32 33 49 53
+    simples_expressao <no> (48)
+        on left: 35 36
+        on right: 34
+    relacional <no> (49)
+        on left: 37 38 39 40 41 42
+        on right: 35
+    soma_expressao <no> (50)
+        on left: 43 44 45
+        on right: 35 36 43 44
+    termo <no> (51)
+        on left: 46 47 48
+        on right: 43 44 45 46 47
+    fator <no> (52)
+        on left: 49 50 51
+        on right: 46 47 48
+    var <no> (53)
+        on left: 52 53
+        on right: 33 50
+
+
+State 0
+
+    0 $accept: • programa $end
+
+    INT   shift, and go to state 1
+    VOID  shift, and go to state 2
+
+    programa            go to state 3
+    declaracao_lista    go to state 4
+    declaracao          go to state 5
+    var_declaracao      go to state 6
+    tipo_especificador  go to state 7
+    fun_declaracao      go to state 8
+
+
+State 1
+
+    8 tipo_especificador: INT •
+
+    $default  reduce using rule 8 (tipo_especificador)
+
+
+State 2
+
+    9 tipo_especificador: VOID •
+
+    $default  reduce using rule 9 (tipo_especificador)
+
+
+State 3
+
+    0 $accept: programa • $end
+
+    $end  shift, and go to state 9
+
+
+State 4
+
+    1 programa: declaracao_lista •
+    2 declaracao_lista: declaracao_lista • declaracao
+
+    INT   shift, and go to state 1
+    VOID  shift, and go to state 2
+
+    $default  reduce using rule 1 (programa)
+
+    declaracao          go to state 10
+    var_declaracao      go to state 6
+    tipo_especificador  go to state 7
+    fun_declaracao      go to state 8
+
+
+State 5
+
+    3 declaracao_lista: declaracao •
+
+    $default  reduce using rule 3 (declaracao_lista)
+
+
+State 6
+
+    4 declaracao: var_declaracao •
+
+    $default  reduce using rule 4 (declaracao)
+
+
+State 7
+
+    6 var_declaracao: tipo_especificador • ID PONTOVIRGULA
+    7               | tipo_especificador • ID ABRECOLCHETE NUM FECHACOLCHETE PONTOVIRGULA
+   10 fun_declaracao: tipo_especificador • ID ABREPARENTESES parametros FECHAPARENTESES corpo_funcao
+
+    ID  shift, and go to state 11
+
+
+State 8
+
+    5 declaracao: fun_declaracao •
+
+    $default  reduce using rule 5 (declaracao)
+
+
+State 9
+
+    0 $accept: programa $end •
+
+    $default  accept
+
+
+State 10
+
+    2 declaracao_lista: declaracao_lista declaracao •
+
+    $default  reduce using rule 2 (declaracao_lista)
+
+
+State 11
+
+    6 var_declaracao: tipo_especificador ID • PONTOVIRGULA
+    7               | tipo_especificador ID • ABRECOLCHETE NUM FECHACOLCHETE PONTOVIRGULA
+   10 fun_declaracao: tipo_especificador ID • ABREPARENTESES parametros FECHAPARENTESES corpo_funcao
+
+    ABREPARENTESES  shift, and go to state 12
+    ABRECOLCHETE    shift, and go to state 13
+    PONTOVIRGULA    shift, and go to state 14
+
+
+State 12
+
+   10 fun_declaracao: tipo_especificador ID ABREPARENTESES • parametros FECHAPARENTESES corpo_funcao
+
+    INT   shift, and go to state 1
+    VOID  shift, and go to state 15
+
+    tipo_especificador  go to state 16
+    parametros          go to state 17
+    parametro_lista     go to state 18
+    parametro           go to state 19
+
+
+State 13
+
+    7 var_declaracao: tipo_especificador ID ABRECOLCHETE • NUM FECHACOLCHETE PONTOVIRGULA
+
+    NUM  shift, and go to state 20
+
+
+State 14
+
+    6 var_declaracao: tipo_especificador ID PONTOVIRGULA •
+
+    $default  reduce using rule 6 (var_declaracao)
+
+
+State 15
+
+    9 tipo_especificador: VOID •
+   11 parametros: VOID •
+
+    FECHAPARENTESES  reduce using rule 11 (parametros)
+    $default         reduce using rule 9 (tipo_especificador)
+
+
+State 16
+
+   15 parametro: tipo_especificador • ID
+   16          | tipo_especificador • ID ABRECOLCHETE FECHACOLCHETE
+
+    ID  shift, and go to state 21
+
+
+State 17
+
+   10 fun_declaracao: tipo_especificador ID ABREPARENTESES parametros • FECHAPARENTESES corpo_funcao
+
+    FECHAPARENTESES  shift, and go to state 22
+
+
+State 18
+
+   12 parametros: parametro_lista •
+   13 parametro_lista: parametro_lista • VIRGULA parametro
+
+    VIRGULA  shift, and go to state 23
+
+    $default  reduce using rule 12 (parametros)
+
+
+State 19
+
+   14 parametro_lista: parametro •
+
+    $default  reduce using rule 14 (parametro_lista)
+
+
+State 20
+
+    7 var_declaracao: tipo_especificador ID ABRECOLCHETE NUM • FECHACOLCHETE PONTOVIRGULA
+
+    FECHACOLCHETE  shift, and go to state 24
+
+
+State 21
+
+   15 parametro: tipo_especificador ID •
+   16          | tipo_especificador ID • ABRECOLCHETE FECHACOLCHETE
+
+    ABRECOLCHETE  shift, and go to state 25
+
+    $default  reduce using rule 15 (parametro)
+
+
+State 22
+
+   10 fun_declaracao: tipo_especificador ID ABREPARENTESES parametros FECHAPARENTESES • corpo_funcao
+
+    ABRECHAVE  shift, and go to state 26
+
+    corpo_funcao  go to state 27
+
+
+State 23
+
+   13 parametro_lista: parametro_lista VIRGULA • parametro
+
+    INT   shift, and go to state 1
+    VOID  shift, and go to state 2
+
+    tipo_especificador  go to state 16
+    parametro           go to state 28
+
+
+State 24
+
+    7 var_declaracao: tipo_especificador ID ABRECOLCHETE NUM FECHACOLCHETE • PONTOVIRGULA
+
+    PONTOVIRGULA  shift, and go to state 29
+
+
+State 25
+
+   16 parametro: tipo_especificador ID ABRECOLCHETE • FECHACOLCHETE
+
+    FECHACOLCHETE  shift, and go to state 30
+
+
+State 26
+
+   17 corpo_funcao: ABRECHAVE • declaracao_lista comando_lista FECHACHAVE
+   18             | ABRECHAVE • comando_lista FECHACHAVE
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    IF              shift, and go to state 33
+    WHILE           shift, and go to state 34
+    RETURN          shift, and go to state 35
+    INT             shift, and go to state 1
+    VOID            shift, and go to state 2
+    ABREPARENTESES  shift, and go to state 36
+    PONTOVIRGULA    shift, and go to state 37
+
+    ID              [reduce using rule 21 (comando_lista)]
+    NUM             [reduce using rule 21 (comando_lista)]
+    IF              [reduce using rule 21 (comando_lista)]
+    WHILE           [reduce using rule 21 (comando_lista)]
+    RETURN          [reduce using rule 21 (comando_lista)]
+    ABREPARENTESES  [reduce using rule 21 (comando_lista)]
+    PONTOVIRGULA    [reduce using rule 21 (comando_lista)]
+    $default        reduce using rule 21 (comando_lista)
+
+    declaracao_lista    go to state 38
+    declaracao          go to state 5
+    var_declaracao      go to state 6
+    tipo_especificador  go to state 7
+    fun_declaracao      go to state 8
+    comando_lista       go to state 39
+    comando             go to state 40
+    expressao_comando   go to state 41
+    selecao_comando     go to state 42
+    iteracao_comando    go to state 43
+    retorno_comando     go to state 44
+    expressao           go to state 45
+    simples_expressao   go to state 46
+    soma_expressao      go to state 47
+    termo               go to state 48
+    fator               go to state 49
+    var                 go to state 50
+
+
+State 27
+
+   10 fun_declaracao: tipo_especificador ID ABREPARENTESES parametros FECHAPARENTESES corpo_funcao •
+
+    $default  reduce using rule 10 (fun_declaracao)
+
+
+State 28
+
+   13 parametro_lista: parametro_lista VIRGULA parametro •
+
+    $default  reduce using rule 13 (parametro_lista)
+
+
+State 29
+
+    7 var_declaracao: tipo_especificador ID ABRECOLCHETE NUM FECHACOLCHETE PONTOVIRGULA •
+
+    $default  reduce using rule 7 (var_declaracao)
+
+
+State 30
+
+   16 parametro: tipo_especificador ID ABRECOLCHETE FECHACOLCHETE •
+
+    $default  reduce using rule 16 (parametro)
+
+
+State 31
+
+   52 var: ID •
+   53    | ID • ABRECOLCHETE expressao FECHACOLCHETE
+
+    ABRECOLCHETE  shift, and go to state 51
+
+    $default  reduce using rule 52 (var)
+
+
+State 32
+
+   51 fator: NUM •
+
+    $default  reduce using rule 51 (fator)
+
+
+State 33
+
+   28 selecao_comando: IF • ABREPARENTESES expressao FECHAPARENTESES comando ELSE comando
+   29                | IF • ABREPARENTESES expressao FECHAPARENTESES comando
+
+    ABREPARENTESES  shift, and go to state 52
+
+
+State 34
+
+   30 iteracao_comando: WHILE • ABREPARENTESES expressao FECHAPARENTESES comando
+
+    ABREPARENTESES  shift, and go to state 53
+
+
+State 35
+
+   31 retorno_comando: RETURN • PONTOVIRGULA
+   32                | RETURN • expressao PONTOVIRGULA
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+    PONTOVIRGULA    shift, and go to state 54
+
+    expressao          go to state 55
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 36
+
+   49 fator: ABREPARENTESES • expressao FECHAPARENTESES
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    expressao          go to state 56
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 37
+
+   27 expressao_comando: PONTOVIRGULA •
+
+    $default  reduce using rule 27 (expressao_comando)
+
+
+State 38
+
+    2 declaracao_lista: declaracao_lista • declaracao
+   17 corpo_funcao: ABRECHAVE declaracao_lista • comando_lista FECHACHAVE
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    IF              shift, and go to state 33
+    WHILE           shift, and go to state 34
+    RETURN          shift, and go to state 35
+    INT             shift, and go to state 1
+    VOID            shift, and go to state 2
+    ABREPARENTESES  shift, and go to state 36
+    PONTOVIRGULA    shift, and go to state 37
+
+    ID              [reduce using rule 21 (comando_lista)]
+    NUM             [reduce using rule 21 (comando_lista)]
+    IF              [reduce using rule 21 (comando_lista)]
+    WHILE           [reduce using rule 21 (comando_lista)]
+    RETURN          [reduce using rule 21 (comando_lista)]
+    ABREPARENTESES  [reduce using rule 21 (comando_lista)]
+    PONTOVIRGULA    [reduce using rule 21 (comando_lista)]
+    $default        reduce using rule 21 (comando_lista)
+
+    declaracao          go to state 10
+    var_declaracao      go to state 6
+    tipo_especificador  go to state 7
+    fun_declaracao      go to state 8
+    comando_lista       go to state 57
+    comando             go to state 40
+    expressao_comando   go to state 41
+    selecao_comando     go to state 42
+    iteracao_comando    go to state 43
+    retorno_comando     go to state 44
+    expressao           go to state 45
+    simples_expressao   go to state 46
+    soma_expressao      go to state 47
+    termo               go to state 48
+    fator               go to state 49
+    var                 go to state 50
+
+
+State 39
+
+   18 corpo_funcao: ABRECHAVE comando_lista • FECHACHAVE
+   19 comando_lista: comando_lista • comando
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    IF              shift, and go to state 33
+    WHILE           shift, and go to state 34
+    RETURN          shift, and go to state 35
+    ABREPARENTESES  shift, and go to state 36
+    FECHACHAVE      shift, and go to state 58
+    PONTOVIRGULA    shift, and go to state 37
+
+    comando            go to state 59
+    expressao_comando  go to state 41
+    selecao_comando    go to state 42
+    iteracao_comando   go to state 43
+    retorno_comando    go to state 44
+    expressao          go to state 45
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 40
+
+   20 comando_lista: comando •
+
+    $default  reduce using rule 20 (comando_lista)
+
+
+State 41
+
+   22 comando: expressao_comando •
+
+    $default  reduce using rule 22 (comando)
+
+
+State 42
+
+   23 comando: selecao_comando •
+
+    $default  reduce using rule 23 (comando)
+
+
+State 43
+
+   24 comando: iteracao_comando •
+
+    $default  reduce using rule 24 (comando)
+
+
+State 44
+
+   25 comando: retorno_comando •
+
+    $default  reduce using rule 25 (comando)
+
+
+State 45
+
+   26 expressao_comando: expressao • PONTOVIRGULA
+
+    PONTOVIRGULA  shift, and go to state 60
+
+
+State 46
+
+   34 expressao: simples_expressao •
+
+    $default  reduce using rule 34 (expressao)
+
+
+State 47
+
+   35 simples_expressao: soma_expressao • relacional soma_expressao
+   36                  | soma_expressao •
+   43 soma_expressao: soma_expressao • MAIS termo
+   44               | soma_expressao • MENOS termo
+
+    MAIS        shift, and go to state 61
+    MENOS       shift, and go to state 62
+    MENOR       shift, and go to state 63
+    MAIOR       shift, and go to state 64
+    MENORIGUAL  shift, and go to state 65
+    MAIORIGUAL  shift, and go to state 66
+    IGUAL       shift, and go to state 67
+    DIFERENTE   shift, and go to state 68
+
+    $default  reduce using rule 36 (simples_expressao)
+
+    relacional  go to state 69
+
+
+State 48
+
+   45 soma_expressao: termo •
+   46 termo: termo • VEZES fator
+   47      | termo • DIVIDIDO fator
+
+    VEZES     shift, and go to state 70
+    DIVIDIDO  shift, and go to state 71
+
+    $default  reduce using rule 45 (soma_expressao)
+
+
+State 49
+
+   48 termo: fator •
+
+    $default  reduce using rule 48 (termo)
+
+
+State 50
+
+   33 expressao: var • ATRIBUICAO expressao
+   50 fator: var •
+
+    ATRIBUICAO  shift, and go to state 72
+
+    $default  reduce using rule 50 (fator)
+
+
+State 51
+
+   53 var: ID ABRECOLCHETE • expressao FECHACOLCHETE
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    expressao          go to state 73
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 52
+
+   28 selecao_comando: IF ABREPARENTESES • expressao FECHAPARENTESES comando ELSE comando
+   29                | IF ABREPARENTESES • expressao FECHAPARENTESES comando
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    expressao          go to state 74
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 53
+
+   30 iteracao_comando: WHILE ABREPARENTESES • expressao FECHAPARENTESES comando
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    expressao          go to state 75
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 54
+
+   31 retorno_comando: RETURN PONTOVIRGULA •
+
+    $default  reduce using rule 31 (retorno_comando)
+
+
+State 55
+
+   32 retorno_comando: RETURN expressao • PONTOVIRGULA
+
+    PONTOVIRGULA  shift, and go to state 76
+
+
+State 56
+
+   49 fator: ABREPARENTESES expressao • FECHAPARENTESES
+
+    FECHAPARENTESES  shift, and go to state 77
+
+
+State 57
+
+   17 corpo_funcao: ABRECHAVE declaracao_lista comando_lista • FECHACHAVE
+   19 comando_lista: comando_lista • comando
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    IF              shift, and go to state 33
+    WHILE           shift, and go to state 34
+    RETURN          shift, and go to state 35
+    ABREPARENTESES  shift, and go to state 36
+    FECHACHAVE      shift, and go to state 78
+    PONTOVIRGULA    shift, and go to state 37
+
+    comando            go to state 59
+    expressao_comando  go to state 41
+    selecao_comando    go to state 42
+    iteracao_comando   go to state 43
+    retorno_comando    go to state 44
+    expressao          go to state 45
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 58
+
+   18 corpo_funcao: ABRECHAVE comando_lista FECHACHAVE •
+
+    $default  reduce using rule 18 (corpo_funcao)
+
+
+State 59
+
+   19 comando_lista: comando_lista comando •
+
+    $default  reduce using rule 19 (comando_lista)
+
+
+State 60
+
+   26 expressao_comando: expressao PONTOVIRGULA •
+
+    $default  reduce using rule 26 (expressao_comando)
+
+
+State 61
+
+   43 soma_expressao: soma_expressao MAIS • termo
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    termo  go to state 79
+    fator  go to state 49
+    var    go to state 80
+
+
+State 62
+
+   44 soma_expressao: soma_expressao MENOS • termo
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    termo  go to state 81
+    fator  go to state 49
+    var    go to state 80
+
+
+State 63
+
+   37 relacional: MENOR •
+
+    $default  reduce using rule 37 (relacional)
+
+
+State 64
+
+   38 relacional: MAIOR •
+
+    $default  reduce using rule 38 (relacional)
+
+
+State 65
+
+   39 relacional: MENORIGUAL •
+
+    $default  reduce using rule 39 (relacional)
+
+
+State 66
+
+   40 relacional: MAIORIGUAL •
+
+    $default  reduce using rule 40 (relacional)
+
+
+State 67
+
+   41 relacional: IGUAL •
+
+    $default  reduce using rule 41 (relacional)
+
+
+State 68
+
+   42 relacional: DIFERENTE •
+
+    $default  reduce using rule 42 (relacional)
+
+
+State 69
+
+   35 simples_expressao: soma_expressao relacional • soma_expressao
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    soma_expressao  go to state 82
+    termo           go to state 48
+    fator           go to state 49
+    var             go to state 80
+
+
+State 70
+
+   46 termo: termo VEZES • fator
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    fator  go to state 83
+    var    go to state 80
+
+
+State 71
+
+   47 termo: termo DIVIDIDO • fator
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    fator  go to state 84
+    var    go to state 80
+
+
+State 72
+
+   33 expressao: var ATRIBUICAO • expressao
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    ABREPARENTESES  shift, and go to state 36
+
+    expressao          go to state 85
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 73
+
+   53 var: ID ABRECOLCHETE expressao • FECHACOLCHETE
+
+    FECHACOLCHETE  shift, and go to state 86
+
+
+State 74
+
+   28 selecao_comando: IF ABREPARENTESES expressao • FECHAPARENTESES comando ELSE comando
+   29                | IF ABREPARENTESES expressao • FECHAPARENTESES comando
+
+    FECHAPARENTESES  shift, and go to state 87
+
+
+State 75
+
+   30 iteracao_comando: WHILE ABREPARENTESES expressao • FECHAPARENTESES comando
+
+    FECHAPARENTESES  shift, and go to state 88
+
+
+State 76
+
+   32 retorno_comando: RETURN expressao PONTOVIRGULA •
+
+    $default  reduce using rule 32 (retorno_comando)
+
+
+State 77
+
+   49 fator: ABREPARENTESES expressao FECHAPARENTESES •
+
+    $default  reduce using rule 49 (fator)
+
+
+State 78
+
+   17 corpo_funcao: ABRECHAVE declaracao_lista comando_lista FECHACHAVE •
+
+    $default  reduce using rule 17 (corpo_funcao)
+
+
+State 79
+
+   43 soma_expressao: soma_expressao MAIS termo •
+   46 termo: termo • VEZES fator
+   47      | termo • DIVIDIDO fator
+
+    VEZES     shift, and go to state 70
+    DIVIDIDO  shift, and go to state 71
+
+    $default  reduce using rule 43 (soma_expressao)
+
+
+State 80
+
+   50 fator: var •
+
+    $default  reduce using rule 50 (fator)
+
+
+State 81
+
+   44 soma_expressao: soma_expressao MENOS termo •
+   46 termo: termo • VEZES fator
+   47      | termo • DIVIDIDO fator
+
+    VEZES     shift, and go to state 70
+    DIVIDIDO  shift, and go to state 71
+
+    $default  reduce using rule 44 (soma_expressao)
+
+
+State 82
+
+   35 simples_expressao: soma_expressao relacional soma_expressao •
+   43 soma_expressao: soma_expressao • MAIS termo
+   44               | soma_expressao • MENOS termo
+
+    MAIS   shift, and go to state 61
+    MENOS  shift, and go to state 62
+
+    $default  reduce using rule 35 (simples_expressao)
+
+
+State 83
+
+   46 termo: termo VEZES fator •
+
+    $default  reduce using rule 46 (termo)
+
+
+State 84
+
+   47 termo: termo DIVIDIDO fator •
+
+    $default  reduce using rule 47 (termo)
+
+
+State 85
+
+   33 expressao: var ATRIBUICAO expressao •
+
+    $default  reduce using rule 33 (expressao)
+
+
+State 86
+
+   53 var: ID ABRECOLCHETE expressao FECHACOLCHETE •
+
+    $default  reduce using rule 53 (var)
+
+
+State 87
+
+   28 selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES • comando ELSE comando
+   29                | IF ABREPARENTESES expressao FECHAPARENTESES • comando
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    IF              shift, and go to state 33
+    WHILE           shift, and go to state 34
+    RETURN          shift, and go to state 35
+    ABREPARENTESES  shift, and go to state 36
+    PONTOVIRGULA    shift, and go to state 37
+
+    comando            go to state 89
+    expressao_comando  go to state 41
+    selecao_comando    go to state 42
+    iteracao_comando   go to state 43
+    retorno_comando    go to state 44
+    expressao          go to state 45
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 88
+
+   30 iteracao_comando: WHILE ABREPARENTESES expressao FECHAPARENTESES • comando
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    IF              shift, and go to state 33
+    WHILE           shift, and go to state 34
+    RETURN          shift, and go to state 35
+    ABREPARENTESES  shift, and go to state 36
+    PONTOVIRGULA    shift, and go to state 37
+
+    comando            go to state 90
+    expressao_comando  go to state 41
+    selecao_comando    go to state 42
+    iteracao_comando   go to state 43
+    retorno_comando    go to state 44
+    expressao          go to state 45
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 89
+
+   28 selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando • ELSE comando
+   29                | IF ABREPARENTESES expressao FECHAPARENTESES comando •
+
+    ELSE  shift, and go to state 91
+
+    ELSE      [reduce using rule 29 (selecao_comando)]
+    $default  reduce using rule 29 (selecao_comando)
+
+
+State 90
+
+   30 iteracao_comando: WHILE ABREPARENTESES expressao FECHAPARENTESES comando •
+
+    $default  reduce using rule 30 (iteracao_comando)
+
+
+State 91
+
+   28 selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando ELSE • comando
+
+    ID              shift, and go to state 31
+    NUM             shift, and go to state 32
+    IF              shift, and go to state 33
+    WHILE           shift, and go to state 34
+    RETURN          shift, and go to state 35
+    ABREPARENTESES  shift, and go to state 36
+    PONTOVIRGULA    shift, and go to state 37
+
+    comando            go to state 92
+    expressao_comando  go to state 41
+    selecao_comando    go to state 42
+    iteracao_comando   go to state 43
+    retorno_comando    go to state 44
+    expressao          go to state 45
+    simples_expressao  go to state 46
+    soma_expressao     go to state 47
+    termo              go to state 48
+    fator              go to state 49
+    var                go to state 50
+
+
+State 92
+
+   28 selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando ELSE comando •
+
+    $default  reduce using rule 28 (selecao_comando)

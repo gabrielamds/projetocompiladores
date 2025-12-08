@@ -1,3 +1,25 @@
+/*
+ * ============================================================================
+ * ANALISADOR SINTATICO (PARSER) - Compilador C-
+ * ============================================================================
+ * 
+ * Valor: 2,5 pontos
+ * 
+ * O analisador sintatico e responsavel por:
+ * - Verificar se a sequencia de tokens segue a gramatica da linguagem
+ * - Construir a arvore sintatica durante o reconhecimento
+ * - Reportar erros sintaticos
+ * 
+ * Este arquivo e a entrada para a ferramenta BISON, que gera automaticamente
+ * o codigo C do parser (cminus.tab.c e cminus.tab.h).
+ * 
+ * A gramatica implementada segue a especificacao da linguagem C- conforme
+ * descrito no Apendice A do livro do Louden.
+ * 
+ * Comando para gerar: bison -d -v cminus.y
+ * ============================================================================
+ */
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,26 +28,41 @@
 #include "simbolos.h"
 #include "semantico.h"
 
+/* Funcoes externas do scanner */
 extern int yylex();
 extern int linha;
 
-/* raiz da arvore sintatica */
+/* Raiz da arvore sintatica - sera preenchida durante o parsing */
 NoArvore* raiz = NULL;
 
-/* declara yydebug para poder ligar o modo de depuracao */
+/* Flag de debug do Bison */
 int yydebug;
 
+/*
+ * yyerror - Funcao chamada pelo Bison quando encontra erro sintatico
+ * Imprime mensagem no formato especificado pela disciplina.
+ */
 void yyerror(char *s) {
     fprintf(stderr, "ERRO SINTATICO: %s LINHA: %d\n", s, linha);
 }
 %}
 
+/* ============================================================================
+ * DECLARACOES DO BISON
+ * ============================================================================
+ */
+
+/* 
+ * Union define os tipos possiveis para os valores semanticos.
+ * Cada simbolo gramatical pode ter um valor associado.
+ */
 %union {
-    void* no;   /* ponteiro genérico para NoArvore */
-    char* str;
-    int num;
+    void* no;   /* Ponteiro para NoArvore */
+    char* str;  /* String (identificadores) */
+    int num;    /* Numero inteiro */
 }
 
+/* --- Tokens (terminais) vindos do scanner --- */
 %token <str> ID
 %token <num> NUM
 %token IF ELSE WHILE RETURN INT VOID
@@ -37,6 +74,7 @@ void yyerror(char *s) {
 %token ABRECHAVE FECHACHAVE
 %token PONTOVIRGULA VIRGULA
 
+/* --- Tipos dos nao-terminais --- */
 %type <no> programa declaracao_lista declaracao var_declaracao tipo_especificador
 %type <no> fun_declaracao parametros parametro_lista parametro corpo_funcao
 %type <no> comando_lista comando expressao_comando selecao_comando
@@ -45,11 +83,23 @@ void yyerror(char *s) {
 
 %%
 
+/* ============================================================================
+ * REGRAS GRAMATICAIS
+ * 
+ * Cada regra tem o formato:
+ *   nao_terminal: producao { acao_semantica } ;
+ * 
+ * As acoes semanticas constroem a arvore sintatica usando as funcoes
+ * criarNo() e adicionarFilho().
+ * ============================================================================
+ */
+
+/* Programa e uma lista de declaracoes */
 programa:
     declaracao_lista   { raiz = $1; }
 ;
 
-/* lista de declarações: NÃO vazia, como no seu original */
+/* Lista de declaracoes (pelo menos uma) */
 declaracao_lista:
     declaracao_lista declaracao {
         $$ = criarNo("DECL_LIST", NULL, linha);
@@ -59,6 +109,7 @@ declaracao_lista:
   | declaracao { $$ = $1; }
 ;
 
+/* Uma declaracao pode ser de variavel ou de funcao */
 declaracao:
     var_declaracao {
         $$ = criarNo("DECL", NULL, linha);
@@ -70,33 +121,38 @@ declaracao:
     }
 ;
 
+/* Declaracao de variavel simples ou array */
 var_declaracao:
     tipo_especificador ID PONTOVIRGULA {
         $$ = criarNo("VAR", $2, linha);
         adicionarFilho($$, $1);
     }
   | tipo_especificador ID ABRECOLCHETE NUM FECHACOLCHETE PONTOVIRGULA {
-        char numstr[16]; sprintf(numstr, "%d", $4);
+        char numstr[16]; 
+        sprintf(numstr, "%d", $4);
         $$ = criarNo("ARRAY_VAR", $2, linha);
         adicionarFilho($$, $1);
         adicionarFilho($$, criarNo("TAM", numstr, linha));
     }
 ;
 
+/* Especificador de tipo: int ou void */
 tipo_especificador:
     INT  { $$ = criarNo("TIPO", "int", linha); }
   | VOID { $$ = criarNo("TIPO", "void", linha); }
 ;
 
+/* Declaracao de funcao */
 fun_declaracao:
     tipo_especificador ID ABREPARENTESES parametros FECHAPARENTESES corpo_funcao {
         $$ = criarNo("FUN_DEF", $2, linha);
-        adicionarFilho($$, $1);
-        adicionarFilho($$, $4);
-        adicionarFilho($$, $6);
+        adicionarFilho($$, $1);   /* tipo de retorno */
+        adicionarFilho($$, $4);   /* parametros */
+        adicionarFilho($$, $6);   /* corpo */
     }
 ;
 
+/* Parametros: void ou lista de parametros */
 parametros:
     VOID { $$ = criarNo("PARAMS", "void", linha); }
   | parametro_lista {
@@ -105,6 +161,7 @@ parametros:
     }
 ;
 
+/* Lista de parametros separados por virgula */
 parametro_lista:
     parametro_lista VIRGULA parametro {
         $$ = criarNo("PARAM_LIST", NULL, linha);
@@ -114,6 +171,7 @@ parametro_lista:
   | parametro { $$ = $1; }
 ;
 
+/* Parametro simples ou array */
 parametro:
     tipo_especificador ID {
         $$ = criarNo("PARAM", $2, linha);
@@ -125,9 +183,7 @@ parametro:
     }
 ;
 
-/* corpo_funcao agora aceita:
-   - { declaracao_lista comando_lista }
-   - { comando_lista }   (função sem declarações internas) */
+/* Corpo da funcao: bloco com declaracoes e comandos */
 corpo_funcao:
     ABRECHAVE declaracao_lista comando_lista FECHACHAVE {
         $$ = criarNo("CORPO", NULL, linha);
@@ -140,7 +196,7 @@ corpo_funcao:
     }
 ;
 
-/* comando_lista pode ser vazia */
+/* Lista de comandos (pode ser vazia) */
 comando_lista:
     comando_lista comando {
         $$ = criarNo("CMD_LIST", NULL, linha);
@@ -153,6 +209,7 @@ comando_lista:
     }
 ;
 
+/* Tipos de comandos */
 comando:
     expressao_comando {
         $$ = criarNo("CMD", NULL, linha);
@@ -172,6 +229,7 @@ comando:
     }
 ;
 
+/* Comando de expressao (expressao seguida de ;) */
 expressao_comando:
     expressao PONTOVIRGULA {
         $$ = criarNo("EXP_CMD", NULL, linha);
@@ -182,28 +240,31 @@ expressao_comando:
     }
 ;
 
+/* Comando de selecao: if e if-else */
 selecao_comando:
     IF ABREPARENTESES expressao FECHAPARENTESES comando ELSE comando {
         $$ = criarNo("IFELSE", NULL, linha);
-        adicionarFilho($$, $3);
-        adicionarFilho($$, $5);
-        adicionarFilho($$, $7);
+        adicionarFilho($$, $3);  /* condicao */
+        adicionarFilho($$, $5);  /* bloco then */
+        adicionarFilho($$, $7);  /* bloco else */
     }
   | IF ABREPARENTESES expressao FECHAPARENTESES comando {
         $$ = criarNo("IF", NULL, linha);
-        adicionarFilho($$, $3);
-        adicionarFilho($$, $5);
+        adicionarFilho($$, $3);  /* condicao */
+        adicionarFilho($$, $5);  /* bloco then */
     }
 ;
 
+/* Comando de iteracao: while */
 iteracao_comando:
     WHILE ABREPARENTESES expressao FECHAPARENTESES comando {
         $$ = criarNo("WHILE", NULL, linha);
-        adicionarFilho($$, $3);
-        adicionarFilho($$, $5);
+        adicionarFilho($$, $3);  /* condicao */
+        adicionarFilho($$, $5);  /* corpo do loop */
     }
 ;
 
+/* Comando de retorno */
 retorno_comando:
     RETURN PONTOVIRGULA {
         $$ = criarNo("RETURN", NULL, linha);
@@ -214,6 +275,7 @@ retorno_comando:
     }
 ;
 
+/* Expressao: atribuicao ou expressao simples */
 expressao:
     var ATRIBUICAO expressao {
         $$ = criarNo("ATRIB", NULL, linha);
@@ -223,6 +285,7 @@ expressao:
   | simples_expressao { $$ = $1; }
 ;
 
+/* Expressao simples: comparacao ou soma */
 simples_expressao:
     soma_expressao relacional soma_expressao {
         $$ = criarNo("REL", NULL, linha);
@@ -233,6 +296,7 @@ simples_expressao:
   | soma_expressao { $$ = $1; }
 ;
 
+/* Operadores relacionais */
 relacional:
       MENOR      { $$ = criarNo("OP", "<", linha); }
     | MAIOR      { $$ = criarNo("OP", ">", linha); }
@@ -242,6 +306,7 @@ relacional:
     | DIFERENTE  { $$ = criarNo("OP", "!=", linha); }
 ;
 
+/* Soma e subtracao */
 soma_expressao:
     soma_expressao MAIS termo {
         $$ = criarNo("SOMA", "+", linha);
@@ -256,6 +321,7 @@ soma_expressao:
   | termo { $$ = $1; }
 ;
 
+/* Multiplicacao e divisao */
 termo:
     termo VEZES fator {
         $$ = criarNo("MULT", "*", linha);
@@ -270,6 +336,7 @@ termo:
   | fator { $$ = $1; }
 ;
 
+/* Fator: parenteses, variavel ou numero */
 fator:
     ABREPARENTESES expressao FECHAPARENTESES { $$ = $2; }
   | var { $$ = $1; }
@@ -280,6 +347,7 @@ fator:
     }
 ;
 
+/* Variavel simples ou acesso a array */
 var:
       ID {
         $$ = criarNo("ID", $1, linha);
@@ -292,6 +360,15 @@ var:
 
 %%
 
+/* ============================================================================
+ * FUNCAO MAIN
+ * 
+ * Ponto de entrada do compilador. Executa as fases:
+ * 1. Analise Sintatica (parser)
+ * 2. Analise Semantica
+ * 3. Imprime arvore sintatica e tabela de simbolos
+ * ============================================================================
+ */
 int main(int argc, char *argv[]) {
     if (argc == 2) {
         FILE *fp = fopen(argv[1], "r");
@@ -302,20 +379,20 @@ int main(int argc, char *argv[]) {
         extern FILE *yyin;
         yyin = fp;
 
-        /* Desliga o modo debug do Bison para saida limpa */
+        /* Desliga debug para saida limpa */
         yydebug = 0;
 
         printf("=== COMPILADOR C- ===\n\n");
         printf("Analisando arquivo: %s\n\n", argv[1]);
 
-        /* Fase 1: Analise Sintatica (Parser) */
+        /* FASE 1: Analise Sintatica */
         printf("--- FASE 1: ANALISE SINTATICA ---\n");
         int resultado = yyparse();
         
         if (resultado == 0) {
             printf("Analise sintatica concluida com sucesso!\n\n");
             
-            /* Fase 2: Analise Semantica */
+            /* FASE 2: Analise Semantica */
             printf("--- FASE 2: ANALISE SEMANTICA ---\n");
             int erros = analisarSemantica(raiz);
             
@@ -325,11 +402,11 @@ int main(int argc, char *argv[]) {
                 printf("\nTotal de erros semanticos: %d\n", erros);
             }
             
-            /* Imprime a Arvore Sintatica */
+            /* Imprime Arvore Sintatica */
             printf("\n--- ARVORE SINTATICA ---\n");
             imprimirArvore(raiz, 0);
             
-            /* Imprime a Tabela de Simbolos */
+            /* Imprime Tabela de Simbolos */
             imprimirTabelaSimbolos();
             
             /* Libera memoria */

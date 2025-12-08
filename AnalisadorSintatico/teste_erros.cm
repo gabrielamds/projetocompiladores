@@ -1,0 +1,31 @@
+/* teste_erros.cm - Programa com erros semanticos para teste */
+
+int x;
+
+/* Funcao de teste */
+int teste(int a) {
+    int b;
+    
+    /* Erro: variavel 'c' nao declarada */
+    b = c + 1;
+    
+    /* Erro: variavel 'z' nao declarada */
+    x = z * 2;
+    
+    return b;
+}
+
+/* Erro: funcao 'teste' redeclarada */
+int teste(int x) {
+    return x;
+}
+
+/* Funcao que usa funcao nao declarada */
+int outra(void) {
+    int r;
+    /* Erro: funcao 'calcular' nao declarada */
+    r = calcular(5);
+    return r;
+}
+
+/* Falta a funcao main - deve gerar erro */

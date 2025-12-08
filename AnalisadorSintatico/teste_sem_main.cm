@@ -1,0 +1,7 @@
+/* teste_sem_main.cm - Programa sem main */
+int x;
+
+int outra(void) {
+    x = 5;
+    return x;
+}

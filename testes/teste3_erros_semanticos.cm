@@ -1,0 +1,26 @@
+/* ===========================================================================
+ * teste3_erros_semanticos.cm - Teste de deteccao de erros semanticos
+ * ===========================================================================
+ * Este programa contem erros semanticos propositais para testar:
+ * - Uso de variavel nao declarada
+ * - Uso de variavel nao declarada em expressao
+ * 
+ * ERROS ESPERADOS:
+ * - ERRO SEMANTICO: variavel 'y' nao declarada LINHA: 16
+ * - ERRO SEMANTICO: variavel 'z' nao declarada LINHA: 19
+ * =========================================================================== */
+
+int x;
+
+int main(void) {
+    int a;
+    a = 5;
+    
+    /* ERRO: variavel 'y' nao foi declarada */
+    x = y + 1;
+    
+    /* ERRO: variavel 'z' nao foi declarada */
+    z = a;
+    
+    return 0;
+}

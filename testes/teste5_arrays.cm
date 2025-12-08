@@ -1,0 +1,26 @@
+/* ===========================================================================
+ * teste5_arrays.cm - Teste de arrays
+ * ===========================================================================
+ * Este programa testa:
+ * - Declaracao de arrays globais
+ * - Declaracao de arrays locais
+ * - Acesso a elementos de array
+ * =========================================================================== */
+
+int vetor[10];
+
+int main(void) {
+    int i;
+    int soma;
+    
+    i = 0;
+    soma = 0;
+    
+    vetor[0] = 1;
+    vetor[1] = 2;
+    vetor[2] = 3;
+    
+    soma = vetor[0] + vetor[1] + vetor[2];
+    
+    return 0;
+}

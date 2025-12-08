@@ -1,0 +1,15 @@
+/* teste_erro_semantico.cm - Teste de erros semanticos */
+int x;
+
+int main(void) {
+    int a;
+    a = 5;
+    
+    /* Erro: variavel 'y' nao declarada */
+    x = y + 1;
+    
+    /* Erro: variavel 'z' nao declarada */
+    z = a;
+    
+    return 0;
+}
