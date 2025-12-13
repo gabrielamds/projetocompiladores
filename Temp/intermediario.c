@@ -1,14 +1,3 @@
-/*
- * ============================================================================
- * GERADOR DE CODIGO INTERMEDIARIO - Implementacao
- * ============================================================================
- * 
- * Implementa a geracao de codigo intermediario em 3-address code.
- * Percorre a arvore sintatica em profundidade e gera instrucoes linearizadas.
- * 
- * ============================================================================
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,11 +45,6 @@ static void gerarInstrucao(const char *op, const char *op1, const char *op2, con
     totalInstrucoes++;
 }
 
-/*
- * analisarNoIntermediario - Percorre a arvore e gera codigo intermediario
- * 
- * A variavel 'resultado' armazena onde o resultado do no deve ser colocado.
- */
 static void analisarNoIntermediario(NoArvore *no, char *resultado) {
     if (no == NULL) return;
     
@@ -122,9 +106,6 @@ static void analisarNoIntermediario(NoArvore *no, char *resultado) {
     }
 }
 
-/*
- * gerarCodigoIntermediario - Ponto de entrada para geracao de codigo
- */
 int gerarCodigoIntermediario(NoArvore *raiz) {
     contadorTemp = 0;
     totalInstrucoes = 0;
@@ -140,9 +121,6 @@ int gerarCodigoIntermediario(NoArvore *raiz) {
     return totalInstrucoes;
 }
 
-/*
- * imprimirCodigoIntermediario - Imprime o codigo intermediario gerado
- */
 void imprimirCodigoIntermediario(void) {
     printf("\n");
     printf("================================================================================\n");

@@ -1,23 +1,3 @@
-/*
- * ============================================================================
- * ANALISADOR SEMANTICO - Implementacao
- * ============================================================================
- * 
- * Valor: 2,5 pontos
- * 
- * Este modulo percorre a arvore sintatica gerada pelo parser e realiza
- * as seguintes verificacoes semanticas:
- * 
- * 1. DECLARACAO: Insere variaveis e funcoes na tabela de simbolos
- * 2. USO: Verifica se identificadores foram declarados antes do uso
- * 3. REDECLARACAO: Detecta variaveis/funcoes declaradas mais de uma vez
- * 4. MAIN: Verifica se a funcao main() foi declarada
- * 
- * A analise usa um percurso em profundidade (DFS) na arvore.
- * 
- * ============================================================================
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,13 +17,6 @@ static void analisarDeclaracaoVariavel(NoArvore *no);
 static void analisarDeclaracaoFuncao(NoArvore *no);
 static void analisarParametros(NoArvore *no);
 
-/*
- * inicializarFuncoesPredefinidas
- * 
- * Insere as funcoes da biblioteca padrao do C- na tabela:
- * - input(): le um inteiro da entrada
- * - output(int x): escreve um inteiro na saida
- */
 void inicializarFuncoesPredefinidas(void) {
     /* input: funcao que retorna int, sem parametros */
     inserirSimbolo("input", "int", "global", 0, 1, 0);
@@ -52,12 +25,6 @@ void inicializarFuncoesPredefinidas(void) {
     inserirSimbolo("output", "void", "global", 0, 1, 1);
 }
 
-/*
- * analisarSemantica - Ponto de entrada da analise semantica
- * 
- * Esta funcao e chamada apos a analise sintatica ter sucesso.
- * Ela inicializa o ambiente e percorre toda a arvore.
- */
 int analisarSemantica(NoArvore *raiz) {
     /* Reseta contadores */
     errosSemanticos = 0;
@@ -71,11 +38,6 @@ int analisarSemantica(NoArvore *raiz) {
         analisarNo(raiz);
     }
     
-    /* 
-     * Verifica se main() foi declarada
-     * Esta e uma regra semantica importante: todo programa C- deve
-     * ter uma funcao main como ponto de entrada.
-     */
     if (buscarSimbolo("main", "global") == NULL) {
         printf("ERRO SEMANTICO: funcao 'main' nao declarada LINHA: 0\n");
         errosSemanticos++;
@@ -84,36 +46,17 @@ int analisarSemantica(NoArvore *raiz) {
     return errosSemanticos;
 }
 
-/*
- * analisarNo - Analisa um no da arvore
- * 
- * Identifica o tipo do no e chama a funcao de analise apropriada.
- * Para nos que nao precisam de tratamento especial, apenas percorre
- * os filhos recursivamente.
- */
 static void analisarNo(NoArvore *no) {
     if (no == NULL) return;
     
-    /* ----------------------------------------------------------------
-     * DECLARACAO DE VARIAVEL
-     * Quando encontra VAR ou ARRAY_VAR, insere na tabela de simbolos
-     * ---------------------------------------------------------------- */
     if (strcmp(no->tipo, "VAR") == 0 || strcmp(no->tipo, "ARRAY_VAR") == 0) {
         analisarDeclaracaoVariavel(no);
     }
     
-    /* ----------------------------------------------------------------
-     * DECLARACAO DE FUNCAO
-     * Quando encontra FUN_DEF, insere funcao e muda escopo
-     * ---------------------------------------------------------------- */
     else if (strcmp(no->tipo, "FUN_DEF") == 0) {
         analisarDeclaracaoFuncao(no);
     }
     
-    /* ----------------------------------------------------------------
-     * USO DE VARIAVEL
-     * Quando encontra ID, verifica se foi declarada
-     * ---------------------------------------------------------------- */
     else if (strcmp(no->tipo, "ID") == 0) {
         Simbolo *s = buscarSimbolo(no->valor, escopoAtual);
         if (s == NULL) {
@@ -123,10 +66,6 @@ static void analisarNo(NoArvore *no) {
         }
     }
     
-    /* ----------------------------------------------------------------
-     * USO DE ARRAY
-     * Similar a variavel, mas tambem analisa o indice
-     * ---------------------------------------------------------------- */
     else if (strcmp(no->tipo, "ID_ARRAY") == 0) {
         Simbolo *s = buscarSimbolo(no->valor, escopoAtual);
         if (s == NULL) {
@@ -140,10 +79,6 @@ static void analisarNo(NoArvore *no) {
         }
     }
     
-    /* ----------------------------------------------------------------
-     * ATRIBUICAO
-     * Verifica o lado esquerdo (variavel) e analisa a expressao
-     * ---------------------------------------------------------------- */
     else if (strcmp(no->tipo, "ATRIB") == 0) {
         // Verifica tipos do lado esquerdo e direito
         char tipo_esq[20] = "", tipo_dir[20] = "";
@@ -230,10 +165,6 @@ static void analisarNo(NoArvore *no) {
         }
     }
     
-    /* ----------------------------------------------------------------
-     * OUTROS NOS
-     * Apenas percorre os filhos recursivamente
-     * ---------------------------------------------------------------- */
     else {
         for (int i = 0; i < no->nFilhos; i++) {
             analisarNo(no->filhos[i]);
@@ -241,12 +172,6 @@ static void analisarNo(NoArvore *no) {
     }
 }
 
-/*
- * analisarDeclaracaoVariavel - Processa declaracao de variavel
- * 
- * Extrai tipo e nome, e insere na tabela de simbolos.
- * Se ja existir no mesmo escopo, reporta erro de redeclaracao.
- */
 static void analisarDeclaracaoVariavel(NoArvore *no) {
     if (no == NULL) return;
     
@@ -273,15 +198,6 @@ static void analisarDeclaracaoVariavel(NoArvore *no) {
     }
 }
 
-/*
- * analisarDeclaracaoFuncao - Processa declaracao de funcao
- * 
- * 1. Insere a funcao na tabela (escopo global)
- * 2. Muda o escopo atual para dentro da funcao
- * 3. Processa os parametros como variaveis locais
- * 4. Analisa o corpo da funcao
- * 5. Restaura o escopo anterior
- */
 static void analisarDeclaracaoFuncao(NoArvore *no) {
     if (no == NULL) return;
     
@@ -334,11 +250,6 @@ static void analisarDeclaracaoFuncao(NoArvore *no) {
     strcpy(escopoAtual, escopoAnterior);
 }
 
-/*
- * analisarParametros - Processa lista de parametros
- * 
- * Cada parametro e inserido como variavel local da funcao.
- */
 static void analisarParametros(NoArvore *no) {
     if (no == NULL) return;
     

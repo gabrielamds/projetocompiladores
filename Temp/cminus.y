@@ -1,25 +1,3 @@
-/*
- * ============================================================================
- * ANALISADOR SINTATICO (PARSER) - Compilador C-
- * ============================================================================
- * 
- * Valor: 2,5 pontos
- * 
- * O analisador sintatico e responsavel por:
- * - Verificar se a sequencia de tokens segue a gramatica da linguagem
- * - Construir a arvore sintatica durante o reconhecimento
- * - Reportar erros sintaticos
- * 
- * Este arquivo e a entrada para a ferramenta BISON, que gera automaticamente
- * o codigo C do parser (cminus.tab.c e cminus.tab.h).
- * 
- * A gramatica implementada segue a especificacao da linguagem C- conforme
- * descrito no Apendice A do livro do Louden.
- * 
- * Comando para gerar: bison -d -v cminus.y
- * ============================================================================
- */
-
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,10 +20,6 @@ int yydebug;
 /* Variavel externa do Flex com o token atual */
 extern char *yytext;
 
-/*
- * yyerror - Funcao chamada pelo Bison quando encontra erro sintatico
- * Imprime mensagem no formato especificado pela disciplina.
- */
 void yyerror(char *s) {
     if (yytext && yytext[0] != '\0') {
         fprintf(stderr, "ERRO SINTATICO: '%s' (esperado: %s) LINHA: %d\n", yytext, s, linha);
@@ -55,15 +29,6 @@ void yyerror(char *s) {
 }
 %}
 
-/* ============================================================================
- * DECLARACOES DO BISON
- * ============================================================================
- */
-
-/* 
- * Union define os tipos possiveis para os valores semanticos.
- * Cada simbolo gramatical pode ter um valor associado.
- */
 %union {
     void* no;   /* Ponteiro para NoArvore */
     char* str;  /* String (identificadores) */
@@ -90,17 +55,6 @@ void yyerror(char *s) {
 %type <no> soma_expressao termo fator var args_funcao
 
 %%
-
-/* ============================================================================
- * REGRAS GRAMATICAIS
- * 
- * Cada regra tem o formato:
- *   nao_terminal: producao { acao_semantica } ;
- * 
- * As acoes semanticas constroem a arvore sintatica usando as funcoes
- * criarNo() e adicionarFilho().
- * ============================================================================
- */
 
 /* Programa e uma lista de declaracoes */
 programa:
@@ -410,15 +364,6 @@ var:
 
 %%
 
-/* ============================================================================
- * FUNCAO MAIN
- * 
- * Ponto de entrada do compilador. Executa as fases:
- * 1. Analise Sintatica (parser)
- * 2. Analise Semantica
- * 3. Imprime arvore sintatica e tabela de simbolos
- * ============================================================================
- */
 int main(int argc, char *argv[]) {
     if (argc == 2) {
         FILE *fp = fopen(argv[1], "r");
