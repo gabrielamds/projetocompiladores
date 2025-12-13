@@ -89,11 +89,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 23 "cminus.y"
+#line 67 "cminus.y"
 
-    void* no;   /* ponteiro genérico para NoArvore */
-    char* str;
-    int num;
+    void* no;   /* Ponteiro para NoArvore */
+    char* str;  /* String (identificadores) */
+    int num;    /* Numero inteiro */
 
 #line 99 "cminus.tab.h"
 

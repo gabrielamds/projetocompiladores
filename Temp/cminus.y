@@ -27,6 +27,7 @@
 #include "arvore.h"
 #include "simbolos.h"
 #include "semantico.h"
+#include "intermediario.h"
 
 /* Funcoes externas do scanner */
 extern int yylex();
@@ -38,12 +39,19 @@ NoArvore* raiz = NULL;
 /* Flag de debug do Bison */
 int yydebug;
 
+/* Variavel externa do Flex com o token atual */
+extern char *yytext;
+
 /*
  * yyerror - Funcao chamada pelo Bison quando encontra erro sintatico
  * Imprime mensagem no formato especificado pela disciplina.
  */
 void yyerror(char *s) {
-    fprintf(stderr, "ERRO SINTATICO: %s LINHA: %d\n", s, linha);
+    if (yytext && yytext[0] != '\0') {
+        fprintf(stderr, "ERRO SINTATICO: '%s' (esperado: %s) LINHA: %d\n", yytext, s, linha);
+    } else {
+        fprintf(stderr, "ERRO SINTATICO: %s LINHA: %d\n", s, linha);
+    }
 }
 %}
 
@@ -77,9 +85,9 @@ void yyerror(char *s) {
 /* --- Tipos dos nao-terminais --- */
 %type <no> programa declaracao_lista declaracao var_declaracao tipo_especificador
 %type <no> fun_declaracao parametros parametro_lista parametro corpo_funcao
-%type <no> comando_lista comando expressao_comando selecao_comando
+%type <no> comando_lista comando expressao_comando selecao_comando bloco_comando
 %type <no> iteracao_comando retorno_comando expressao simples_expressao relacional
-%type <no> soma_expressao termo fator var
+%type <no> soma_expressao termo fator var args_funcao
 
 %%
 
@@ -227,6 +235,29 @@ comando:
         $$ = criarNo("CMD", NULL, linha);
         adicionarFilho($$, $1);
     }
+  | bloco_comando {
+        $$ = $1;
+    }
+;
+
+/* Bloco de comandos com chaves */
+bloco_comando:
+    ABRECHAVE declaracao_lista comando_lista FECHACHAVE {
+        $$ = criarNo("BLOCO", NULL, linha);
+        adicionarFilho($$, $2);
+        adicionarFilho($$, $3);
+    }
+  | ABRECHAVE comando_lista FECHACHAVE {
+        $$ = criarNo("BLOCO", NULL, linha);
+        adicionarFilho($$, $2);
+    }
+  | ABRECHAVE declaracao_lista FECHACHAVE {
+        $$ = criarNo("BLOCO", NULL, linha);
+        adicionarFilho($$, $2);
+    }
+  | ABRECHAVE FECHACHAVE {
+        $$ = criarNo("BLOCO_VAZIO", NULL, linha);
+    }
 ;
 
 /* Comando de expressao (expressao seguida de ;) */
@@ -336,7 +367,7 @@ termo:
   | fator { $$ = $1; }
 ;
 
-/* Fator: parenteses, variavel ou numero */
+/* Fator: parenteses, variavel, numero ou chamada de funcao */
 fator:
     ABREPARENTESES expressao FECHAPARENTESES { $$ = $2; }
   | var { $$ = $1; }
@@ -344,6 +375,25 @@ fator:
         char numstr[16];
         sprintf(numstr, "%d", $1);
         $$ = criarNo("NUM", numstr, linha);
+    }
+  | ID ABREPARENTESES FECHAPARENTESES {
+        $$ = criarNo("CHAMADA_FUNCAO", $1, linha);
+    }
+  | ID ABREPARENTESES args_funcao FECHAPARENTESES {
+        $$ = criarNo("CHAMADA_FUNCAO", $1, linha);
+        adicionarFilho($$, $3);
+    }
+;
+
+/* Argumentos de funcao */
+args_funcao:
+    expressao {
+        $$ = criarNo("ARGS", NULL, linha);
+        adicionarFilho($$, $1);
+    }
+  | args_funcao VIRGULA expressao {
+        adicionarFilho($1, $3);
+        $$ = $1;
     }
 ;
 
@@ -406,10 +456,19 @@ int main(int argc, char *argv[]) {
             printf("\n--- ARVORE SINTATICA ---\n");
             imprimirArvore(raiz, 0);
             
+            /* FASE 3: Geracao de Codigo Intermediario */
+            printf("\n--- FASE 3: GERACAO DE CODIGO INTERMEDIARIO ---\n");
+            int numInstrucoes = gerarCodigoIntermediario(raiz);
+            printf("Codigo intermediario gerado: %d instrucoes\n", numInstrucoes);
+            
+            /* Imprime Codigo Intermediario */
+            imprimirCodigoIntermediario();
+            
             /* Imprime Tabela de Simbolos */
             imprimirTabelaSimbolos();
             
             /* Libera memoria */
+            liberarCodigoIntermediario();
             liberarTabelaSimbolos();
         } else {
             printf("\nCompilacao abortada devido a erros sintaticos.\n");

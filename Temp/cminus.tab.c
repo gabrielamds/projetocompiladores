@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 1 "cminus.y"
+#line 23 "cminus.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,21 +75,34 @@
 #include "arvore.h"
 #include "simbolos.h"
 #include "semantico.h"
+#include "intermediario.h"
 
+/* Funcoes externas do scanner */
 extern int yylex();
 extern int linha;
 
-/* raiz da arvore sintatica */
+/* Raiz da arvore sintatica - sera preenchida durante o parsing */
 NoArvore* raiz = NULL;
 
-/* declara yydebug para poder ligar o modo de depuracao */
+/* Flag de debug do Bison */
 int yydebug;
 
+/* Variavel externa do Flex com o token atual */
+extern char *yytext;
+
+/*
+ * yyerror - Funcao chamada pelo Bison quando encontra erro sintatico
+ * Imprime mensagem no formato especificado pela disciplina.
+ */
 void yyerror(char *s) {
-    fprintf(stderr, "ERRO SINTATICO: %s LINHA: %d\n", s, linha);
+    if (yytext && yytext[0] != '\0') {
+        fprintf(stderr, "ERRO SINTATICO: '%s' (esperado: %s) LINHA: %d\n", yytext, s, linha);
+    } else {
+        fprintf(stderr, "ERRO SINTATICO: %s LINHA: %d\n", s, linha);
+    }
 }
 
-#line 93 "cminus.tab.c"
+#line 106 "cminus.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -160,17 +173,19 @@ enum yysymbol_kind_t
   YYSYMBOL_corpo_funcao = 40,              /* corpo_funcao  */
   YYSYMBOL_comando_lista = 41,             /* comando_lista  */
   YYSYMBOL_comando = 42,                   /* comando  */
-  YYSYMBOL_expressao_comando = 43,         /* expressao_comando  */
-  YYSYMBOL_selecao_comando = 44,           /* selecao_comando  */
-  YYSYMBOL_iteracao_comando = 45,          /* iteracao_comando  */
-  YYSYMBOL_retorno_comando = 46,           /* retorno_comando  */
-  YYSYMBOL_expressao = 47,                 /* expressao  */
-  YYSYMBOL_simples_expressao = 48,         /* simples_expressao  */
-  YYSYMBOL_relacional = 49,                /* relacional  */
-  YYSYMBOL_soma_expressao = 50,            /* soma_expressao  */
-  YYSYMBOL_termo = 51,                     /* termo  */
-  YYSYMBOL_fator = 52,                     /* fator  */
-  YYSYMBOL_var = 53                        /* var  */
+  YYSYMBOL_bloco_comando = 43,             /* bloco_comando  */
+  YYSYMBOL_expressao_comando = 44,         /* expressao_comando  */
+  YYSYMBOL_selecao_comando = 45,           /* selecao_comando  */
+  YYSYMBOL_iteracao_comando = 46,          /* iteracao_comando  */
+  YYSYMBOL_retorno_comando = 47,           /* retorno_comando  */
+  YYSYMBOL_expressao = 48,                 /* expressao  */
+  YYSYMBOL_simples_expressao = 49,         /* simples_expressao  */
+  YYSYMBOL_relacional = 50,                /* relacional  */
+  YYSYMBOL_soma_expressao = 51,            /* soma_expressao  */
+  YYSYMBOL_termo = 52,                     /* termo  */
+  YYSYMBOL_fator = 53,                     /* fator  */
+  YYSYMBOL_args_funcao = 54,               /* args_funcao  */
+  YYSYMBOL_var = 55                        /* var  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -498,16 +513,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  9
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   110
+#define YYLAST   169
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  30
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  24
+#define YYNNTS  26
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  54
+#define YYNRULES  63
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  93
+#define YYNSTATES  109
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   284
@@ -559,12 +574,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    49,    49,    54,    59,    63,    67,    74,    78,    87,
-      88,    92,   101,   102,   109,   114,   118,   122,   132,   137,
-     145,   150,   151,   157,   161,   165,   169,   176,   180,   186,
-     192,   200,   208,   211,   218,   223,   227,   233,   237,   238,
-     239,   240,   241,   242,   246,   251,   256,   260,   265,   270,
-     274,   275,   276,   284,   287
+       0,   107,   107,   112,   117,   122,   126,   134,   138,   149,
+     150,   155,   165,   166,   174,   179,   184,   188,   196,   201,
+     209,   214,   215,   222,   226,   230,   234,   238,   245,   250,
+     254,   258,   265,   269,   276,   282,   291,   300,   303,   311,
+     316,   321,   327,   332,   333,   334,   335,   336,   337,   342,
+     347,   352,   357,   362,   367,   372,   373,   374,   379,   382,
+     390,   394,   402,   405
 };
 #endif
 
@@ -588,9 +604,10 @@ static const char *const yytname[] =
   "PONTOVIRGULA", "VIRGULA", "$accept", "programa", "declaracao_lista",
   "declaracao", "var_declaracao", "tipo_especificador", "fun_declaracao",
   "parametros", "parametro_lista", "parametro", "corpo_funcao",
-  "comando_lista", "comando", "expressao_comando", "selecao_comando",
-  "iteracao_comando", "retorno_comando", "expressao", "simples_expressao",
-  "relacional", "soma_expressao", "termo", "fator", "var", YY_NULLPTR
+  "comando_lista", "comando", "bloco_comando", "expressao_comando",
+  "selecao_comando", "iteracao_comando", "retorno_comando", "expressao",
+  "simples_expressao", "relacional", "soma_expressao", "termo", "fator",
+  "args_funcao", "var", YY_NULLPTR
 };
 
 static const char *
@@ -600,7 +617,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-40)
+#define YYPACT_NINF (-41)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -612,18 +629,19 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-static const yytype_int8 yypact[] =
+static const yytype_int16 yypact[] =
 {
-       5,   -40,   -40,     8,     5,   -40,   -40,    24,   -40,   -40,
-     -40,    61,     7,    51,   -40,    41,    28,    47,    55,   -40,
-      63,    66,    65,     5,    59,    68,     2,   -40,   -40,   -40,
-     -40,    70,   -40,    73,    74,    22,    25,   -40,     2,    29,
-     -40,   -40,   -40,   -40,   -40,    69,   -40,    62,     9,   -40,
-      77,    25,    25,    25,   -40,    71,    78,    38,   -40,   -40,
-     -40,    25,    25,   -40,   -40,   -40,   -40,   -40,   -40,    25,
-      25,    25,    25,    75,    79,    80,   -40,   -40,   -40,     9,
-     -40,     9,    27,   -40,   -40,   -40,   -40,    64,    64,    98,
-     -40,    64,   -40
+      -5,   -41,   -41,     8,    -5,   -41,   -41,     9,   -41,   -41,
+     -41,   110,    29,    13,   -41,     7,    17,    12,    31,   -41,
+      41,    50,    56,    -5,    58,    64,    47,   -41,   -41,   -41,
+     -41,    90,   -41,    83,    91,    15,    -1,     6,   -41,    47,
+      73,   -41,   -41,   -41,   -41,   -41,   -41,    75,   -41,   145,
+     126,   -41,   100,    68,    -1,    -1,    -1,   -41,    96,   105,
+     -41,    37,    80,    89,   -41,   -41,   -41,    -1,    -1,   -41,
+     -41,   -41,   -41,   -41,   -41,    -1,    -1,    -1,    -1,   -41,
+     -41,    81,   106,   143,   144,   -41,   -41,   -41,   115,   -41,
+     -41,   126,   -41,   126,   124,   -41,   -41,   -41,   -41,    -1,
+     -41,   122,   122,   -41,   -41,   127,   -41,   122,   -41
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -634,29 +652,30 @@ static const yytype_int8 yydefact[] =
        0,     9,    10,     0,     2,     4,     5,     0,     6,     1,
        3,     0,     0,     0,     7,    10,     0,     0,    13,    15,
        0,    16,     0,     0,     0,     0,    22,    11,    14,     8,
-      17,    53,    52,     0,     0,     0,     0,    28,    22,     0,
-      21,    23,    24,    25,    26,     0,    35,    37,    46,    49,
-      51,     0,     0,     0,    32,     0,     0,     0,    19,    20,
-      27,     0,     0,    38,    39,    40,    41,    42,    43,     0,
-       0,     0,     0,     0,     0,     0,    33,    50,    18,    44,
-      51,    45,    36,    47,    48,    34,    54,     0,     0,    30,
-      31,     0,    29
+      17,    62,    57,     0,     0,     0,     0,     0,    33,    22,
+       0,    21,    27,    23,    24,    25,    26,     0,    40,    42,
+      51,    54,    56,     0,     0,     0,     0,    37,     0,     0,
+      31,     0,     0,     0,    19,    20,    32,     0,     0,    43,
+      44,    45,    46,    47,    48,     0,     0,     0,     0,    58,
+      60,     0,     0,     0,     0,    38,    55,    30,     0,    29,
+      18,    49,    56,    50,    41,    52,    53,    39,    59,     0,
+      63,     0,     0,    28,    61,    35,    36,     0,    34
 };
 
 /* YYPGOTO[NTERM-NUM].  */
-static const yytype_int8 yypgoto[] =
+static const yytype_int16 yypgoto[] =
 {
-     -40,   -40,    81,    -3,   -40,   -10,   -40,   -40,   -40,    82,
-     -40,    72,   -39,   -40,   -40,   -40,   -40,   -32,   -40,   -40,
-      37,    14,   -12,    -8
+     -41,   -41,    42,    -3,   -41,    86,   -41,   -41,   -41,   146,
+     -41,    -8,   -40,   -41,   -41,   -41,   -41,   -41,   -29,   -41,
+     -41,    72,    84,    82,   -41,    78
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
        0,     3,     4,     5,     6,     7,     8,    17,    18,    19,
-      27,    39,    40,    41,    42,    43,    44,    45,    46,    69,
-      47,    48,    49,    50
+      27,    40,    41,    42,    43,    44,    45,    46,    47,    48,
+      75,    49,    50,    51,    81,    52
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -664,34 +683,44 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      59,    10,    16,    55,    56,    31,    32,    33,     9,    34,
-      35,     1,     2,    16,     1,     2,     1,    15,    59,    73,
-      74,    75,    70,    71,    36,    31,    32,    11,    31,    32,
-      37,    21,    31,    32,    33,    10,    34,    35,    61,    62,
-      85,    31,    32,    33,    36,    34,    35,    36,    89,    90,
-      54,    36,    92,    80,    80,    20,    58,    37,    83,    84,
-      36,    80,    80,    80,   -12,    78,    37,    31,    32,    33,
-      22,    34,    35,    61,    62,    79,    81,    63,    64,    65,
-      66,    67,    68,    12,    23,    13,    36,    29,    24,    14,
-      25,    26,    37,    30,    51,    52,    53,    60,    72,    76,
-      86,    77,    87,    88,    91,    28,    82,    38,     0,     0,
-      57
+      65,    10,    31,    32,     1,     2,    58,    59,     9,    31,
+      32,    33,    11,    34,    35,     1,     2,    20,    31,    32,
+      21,    36,    65,    65,    80,    82,    83,    84,    36,    62,
+     -12,    63,    37,    60,    38,    22,    10,    36,     1,    15,
+      31,    32,    33,    57,    34,    35,     1,     2,    65,    97,
+      31,    32,    33,    88,    34,    35,     1,     2,    10,    36,
+      23,   105,   106,    37,    87,    38,    24,   108,    39,    36,
+     104,    31,    32,    37,    25,    38,    31,    32,    33,    61,
+      34,    35,    26,    31,    32,    33,    29,    34,    35,    30,
+      36,    79,    31,    32,    33,    36,    34,    35,    16,    37,
+      64,    38,    36,    66,    98,    55,    37,    89,    38,    16,
+      99,    36,    53,    56,    54,    37,    90,    38,    31,    32,
+      33,    78,    34,    35,    85,    31,    32,    33,    86,    34,
+      35,   100,    12,   107,    13,    67,    68,    36,    14,    76,
+      77,    37,   103,    38,    36,    92,    92,    94,    37,     0,
+      38,    91,    93,    92,    92,    92,    67,    68,    95,    96,
+      69,    70,    71,    72,    73,    74,   101,   102,     0,    28
 };
 
 static const yytype_int8 yycheck[] =
 {
-      39,     4,    12,    35,    36,     3,     4,     5,     0,     7,
-       8,     9,    10,    23,     9,    10,     9,    10,    57,    51,
-      52,    53,    13,    14,    22,     3,     4,     3,     3,     4,
-      28,     3,     3,     4,     5,    38,     7,     8,    11,    12,
-      72,     3,     4,     5,    22,     7,     8,    22,    87,    88,
-      28,    22,    91,    61,    62,     4,    27,    28,    70,    71,
-      22,    69,    70,    71,    23,    27,    28,     3,     4,     5,
-      23,     7,     8,    11,    12,    61,    62,    15,    16,    17,
-      18,    19,    20,    22,    29,    24,    22,    28,    25,    28,
-      24,    26,    28,    25,    24,    22,    22,    28,    21,    28,
-      25,    23,    23,    23,     6,    23,    69,    26,    -1,    -1,
-      38
+      40,     4,     3,     4,     9,    10,    35,    36,     0,     3,
+       4,     5,     3,     7,     8,     9,    10,     4,     3,     4,
+       3,    22,    62,    63,    53,    54,    55,    56,    22,    37,
+      23,    39,    26,    27,    28,    23,    39,    22,     9,    10,
+       3,     4,     5,    28,     7,     8,     9,    10,    88,    78,
+       3,     4,     5,    61,     7,     8,     9,    10,    61,    22,
+      29,   101,   102,    26,    27,    28,    25,   107,    26,    22,
+      99,     3,     4,    26,    24,    28,     3,     4,     5,    37,
+       7,     8,    26,     3,     4,     5,    28,     7,     8,    25,
+      22,    23,     3,     4,     5,    22,     7,     8,    12,    26,
+      27,    28,    22,    28,    23,    22,    26,    27,    28,    23,
+      29,    22,    22,    22,    24,    26,    27,    28,     3,     4,
+       5,    21,     7,     8,    28,     3,     4,     5,    23,     7,
+       8,    25,    22,     6,    24,    11,    12,    22,    28,    13,
+      14,    26,    27,    28,    22,    67,    68,    75,    26,    -1,
+      28,    67,    68,    75,    76,    77,    11,    12,    76,    77,
+      15,    16,    17,    18,    19,    20,    23,    23,    -1,    23
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -701,13 +730,14 @@ static const yytype_int8 yystos[] =
        0,     9,    10,    31,    32,    33,    34,    35,    36,     0,
       33,     3,    22,    24,    28,    10,    35,    37,    38,    39,
        4,     3,    23,    29,    25,    24,    26,    40,    39,    28,
-      25,     3,     4,     5,     7,     8,    22,    28,    32,    41,
-      42,    43,    44,    45,    46,    47,    48,    50,    51,    52,
-      53,    24,    22,    22,    28,    47,    47,    41,    27,    42,
-      28,    11,    12,    15,    16,    17,    18,    19,    20,    49,
-      13,    14,    21,    47,    47,    47,    28,    23,    27,    51,
-      53,    51,    50,    52,    52,    47,    25,    23,    23,    42,
-      42,     6,    42
+      25,     3,     4,     5,     7,     8,    22,    26,    28,    32,
+      41,    42,    43,    44,    45,    46,    47,    48,    49,    51,
+      52,    53,    55,    22,    24,    22,    22,    28,    48,    48,
+      27,    32,    41,    41,    27,    42,    28,    11,    12,    15,
+      16,    17,    18,    19,    20,    50,    13,    14,    21,    23,
+      48,    54,    48,    48,    48,    28,    23,    27,    41,    27,
+      27,    52,    55,    52,    51,    53,    53,    48,    23,    29,
+      25,    23,    23,    27,    48,    42,    42,     6,    42
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -715,10 +745,11 @@ static const yytype_int8 yyr1[] =
 {
        0,    30,    31,    32,    32,    33,    33,    34,    34,    35,
       35,    36,    37,    37,    38,    38,    39,    39,    40,    40,
-      41,    41,    41,    42,    42,    42,    42,    43,    43,    44,
-      44,    45,    46,    46,    47,    47,    48,    48,    49,    49,
-      49,    49,    49,    49,    50,    50,    50,    51,    51,    51,
-      52,    52,    52,    53,    53
+      41,    41,    41,    42,    42,    42,    42,    42,    43,    43,
+      43,    43,    44,    44,    45,    45,    46,    47,    47,    48,
+      48,    49,    49,    50,    50,    50,    50,    50,    50,    51,
+      51,    51,    52,    52,    52,    53,    53,    53,    53,    53,
+      54,    54,    55,    55
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -726,10 +757,11 @@ static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     2,     1,     1,     1,     3,     6,     1,
        1,     6,     1,     1,     3,     1,     2,     4,     4,     3,
-       2,     1,     0,     1,     1,     1,     1,     2,     1,     7,
-       5,     5,     2,     3,     3,     1,     3,     1,     1,     1,
-       1,     1,     1,     1,     3,     3,     1,     3,     3,     1,
-       3,     1,     1,     1,     4
+       2,     1,     0,     1,     1,     1,     1,     1,     4,     3,
+       3,     2,     2,     1,     7,     5,     5,     2,     3,     3,
+       1,     3,     1,     1,     1,     1,     1,     1,     1,     3,
+       3,     1,     3,     3,     1,     3,     1,     1,     3,     4,
+       1,     3,     1,     4
 };
 
 
@@ -1193,443 +1225,523 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* programa: declaracao_lista  */
-#line 49 "cminus.y"
+#line 107 "cminus.y"
                        { raiz = (yyvsp[0].no); }
-#line 1199 "cminus.tab.c"
+#line 1231 "cminus.tab.c"
     break;
 
   case 3: /* declaracao_lista: declaracao_lista declaracao  */
-#line 54 "cminus.y"
+#line 112 "cminus.y"
                                 {
         (yyval.no) = criarNo("DECL_LIST", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1209 "cminus.tab.c"
+#line 1241 "cminus.tab.c"
     break;
 
   case 4: /* declaracao_lista: declaracao  */
-#line 59 "cminus.y"
+#line 117 "cminus.y"
                { (yyval.no) = (yyvsp[0].no); }
-#line 1215 "cminus.tab.c"
+#line 1247 "cminus.tab.c"
     break;
 
   case 5: /* declaracao: var_declaracao  */
-#line 63 "cminus.y"
+#line 122 "cminus.y"
                    {
         (yyval.no) = criarNo("DECL", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1224 "cminus.tab.c"
+#line 1256 "cminus.tab.c"
     break;
 
   case 6: /* declaracao: fun_declaracao  */
-#line 67 "cminus.y"
+#line 126 "cminus.y"
                    {
         (yyval.no) = criarNo("DECL", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1233 "cminus.tab.c"
+#line 1265 "cminus.tab.c"
     break;
 
   case 7: /* var_declaracao: tipo_especificador ID PONTOVIRGULA  */
-#line 74 "cminus.y"
+#line 134 "cminus.y"
                                        {
         (yyval.no) = criarNo("VAR", (yyvsp[-1].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
     }
-#line 1242 "cminus.tab.c"
+#line 1274 "cminus.tab.c"
     break;
 
   case 8: /* var_declaracao: tipo_especificador ID ABRECOLCHETE NUM FECHACOLCHETE PONTOVIRGULA  */
-#line 78 "cminus.y"
+#line 138 "cminus.y"
                                                                       {
-        char numstr[16]; sprintf(numstr, "%d", (yyvsp[-2].num));
+        char numstr[16]; 
+        sprintf(numstr, "%d", (yyvsp[-2].num));
         (yyval.no) = criarNo("ARRAY_VAR", (yyvsp[-4].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-5].no));
         adicionarFilho((yyval.no), criarNo("TAM", numstr, linha));
     }
-#line 1253 "cminus.tab.c"
+#line 1286 "cminus.tab.c"
     break;
 
   case 9: /* tipo_especificador: INT  */
-#line 87 "cminus.y"
+#line 149 "cminus.y"
          { (yyval.no) = criarNo("TIPO", "int", linha); }
-#line 1259 "cminus.tab.c"
+#line 1292 "cminus.tab.c"
     break;
 
   case 10: /* tipo_especificador: VOID  */
-#line 88 "cminus.y"
+#line 150 "cminus.y"
          { (yyval.no) = criarNo("TIPO", "void", linha); }
-#line 1265 "cminus.tab.c"
+#line 1298 "cminus.tab.c"
     break;
 
   case 11: /* fun_declaracao: tipo_especificador ID ABREPARENTESES parametros FECHAPARENTESES corpo_funcao  */
-#line 92 "cminus.y"
+#line 155 "cminus.y"
                                                                                  {
         (yyval.no) = criarNo("FUN_DEF", (yyvsp[-4].str), linha);
-        adicionarFilho((yyval.no), (yyvsp[-5].no));
-        adicionarFilho((yyval.no), (yyvsp[-2].no));
-        adicionarFilho((yyval.no), (yyvsp[0].no));
+        adicionarFilho((yyval.no), (yyvsp[-5].no));   /* tipo de retorno */
+        adicionarFilho((yyval.no), (yyvsp[-2].no));   /* parametros */
+        adicionarFilho((yyval.no), (yyvsp[0].no));   /* corpo */
     }
-#line 1276 "cminus.tab.c"
+#line 1309 "cminus.tab.c"
     break;
 
   case 12: /* parametros: VOID  */
-#line 101 "cminus.y"
+#line 165 "cminus.y"
          { (yyval.no) = criarNo("PARAMS", "void", linha); }
-#line 1282 "cminus.tab.c"
+#line 1315 "cminus.tab.c"
     break;
 
   case 13: /* parametros: parametro_lista  */
-#line 102 "cminus.y"
+#line 166 "cminus.y"
                     {
         (yyval.no) = criarNo("PARAMS", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1291 "cminus.tab.c"
+#line 1324 "cminus.tab.c"
     break;
 
   case 14: /* parametro_lista: parametro_lista VIRGULA parametro  */
-#line 109 "cminus.y"
+#line 174 "cminus.y"
                                       {
         (yyval.no) = criarNo("PARAM_LIST", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1301 "cminus.tab.c"
+#line 1334 "cminus.tab.c"
     break;
 
   case 15: /* parametro_lista: parametro  */
-#line 114 "cminus.y"
+#line 179 "cminus.y"
               { (yyval.no) = (yyvsp[0].no); }
-#line 1307 "cminus.tab.c"
+#line 1340 "cminus.tab.c"
     break;
 
   case 16: /* parametro: tipo_especificador ID  */
-#line 118 "cminus.y"
+#line 184 "cminus.y"
                           {
         (yyval.no) = criarNo("PARAM", (yyvsp[0].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1316 "cminus.tab.c"
+#line 1349 "cminus.tab.c"
     break;
 
   case 17: /* parametro: tipo_especificador ID ABRECOLCHETE FECHACOLCHETE  */
-#line 122 "cminus.y"
+#line 188 "cminus.y"
                                                      {
         (yyval.no) = criarNo("PARAM_ARRAY", (yyvsp[-2].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-3].no));
     }
-#line 1325 "cminus.tab.c"
+#line 1358 "cminus.tab.c"
     break;
 
   case 18: /* corpo_funcao: ABRECHAVE declaracao_lista comando_lista FECHACHAVE  */
-#line 132 "cminus.y"
+#line 196 "cminus.y"
                                                         {
         (yyval.no) = criarNo("CORPO", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1335 "cminus.tab.c"
+#line 1368 "cminus.tab.c"
     break;
 
   case 19: /* corpo_funcao: ABRECHAVE comando_lista FECHACHAVE  */
-#line 137 "cminus.y"
+#line 201 "cminus.y"
                                        {
         (yyval.no) = criarNo("CORPO", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1344 "cminus.tab.c"
+#line 1377 "cminus.tab.c"
     break;
 
   case 20: /* comando_lista: comando_lista comando  */
-#line 145 "cminus.y"
+#line 209 "cminus.y"
                           {
         (yyval.no) = criarNo("CMD_LIST", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1354 "cminus.tab.c"
+#line 1387 "cminus.tab.c"
     break;
 
   case 21: /* comando_lista: comando  */
-#line 150 "cminus.y"
+#line 214 "cminus.y"
             { (yyval.no) = (yyvsp[0].no); }
-#line 1360 "cminus.tab.c"
+#line 1393 "cminus.tab.c"
     break;
 
   case 22: /* comando_lista: %empty  */
-#line 151 "cminus.y"
+#line 215 "cminus.y"
                 {
         (yyval.no) = criarNo("CMD_LIST_VAZIA", NULL, linha);
     }
-#line 1368 "cminus.tab.c"
+#line 1401 "cminus.tab.c"
     break;
 
   case 23: /* comando: expressao_comando  */
-#line 157 "cminus.y"
+#line 222 "cminus.y"
                       {
         (yyval.no) = criarNo("CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1377 "cminus.tab.c"
+#line 1410 "cminus.tab.c"
     break;
 
   case 24: /* comando: selecao_comando  */
-#line 161 "cminus.y"
+#line 226 "cminus.y"
                     {
         (yyval.no) = criarNo("CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1386 "cminus.tab.c"
+#line 1419 "cminus.tab.c"
     break;
 
   case 25: /* comando: iteracao_comando  */
-#line 165 "cminus.y"
+#line 230 "cminus.y"
                      {
         (yyval.no) = criarNo("CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1395 "cminus.tab.c"
+#line 1428 "cminus.tab.c"
     break;
 
   case 26: /* comando: retorno_comando  */
-#line 169 "cminus.y"
+#line 234 "cminus.y"
                     {
         (yyval.no) = criarNo("CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1404 "cminus.tab.c"
+#line 1437 "cminus.tab.c"
     break;
 
-  case 27: /* expressao_comando: expressao PONTOVIRGULA  */
-#line 176 "cminus.y"
+  case 27: /* comando: bloco_comando  */
+#line 238 "cminus.y"
+                  {
+        (yyval.no) = (yyvsp[0].no);
+    }
+#line 1445 "cminus.tab.c"
+    break;
+
+  case 28: /* bloco_comando: ABRECHAVE declaracao_lista comando_lista FECHACHAVE  */
+#line 245 "cminus.y"
+                                                        {
+        (yyval.no) = criarNo("BLOCO", NULL, linha);
+        adicionarFilho((yyval.no), (yyvsp[-2].no));
+        adicionarFilho((yyval.no), (yyvsp[-1].no));
+    }
+#line 1455 "cminus.tab.c"
+    break;
+
+  case 29: /* bloco_comando: ABRECHAVE comando_lista FECHACHAVE  */
+#line 250 "cminus.y"
+                                       {
+        (yyval.no) = criarNo("BLOCO", NULL, linha);
+        adicionarFilho((yyval.no), (yyvsp[-1].no));
+    }
+#line 1464 "cminus.tab.c"
+    break;
+
+  case 30: /* bloco_comando: ABRECHAVE declaracao_lista FECHACHAVE  */
+#line 254 "cminus.y"
+                                          {
+        (yyval.no) = criarNo("BLOCO", NULL, linha);
+        adicionarFilho((yyval.no), (yyvsp[-1].no));
+    }
+#line 1473 "cminus.tab.c"
+    break;
+
+  case 31: /* bloco_comando: ABRECHAVE FECHACHAVE  */
+#line 258 "cminus.y"
+                         {
+        (yyval.no) = criarNo("BLOCO_VAZIO", NULL, linha);
+    }
+#line 1481 "cminus.tab.c"
+    break;
+
+  case 32: /* expressao_comando: expressao PONTOVIRGULA  */
+#line 265 "cminus.y"
                            {
         (yyval.no) = criarNo("EXP_CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1413 "cminus.tab.c"
+#line 1490 "cminus.tab.c"
     break;
 
-  case 28: /* expressao_comando: PONTOVIRGULA  */
-#line 180 "cminus.y"
+  case 33: /* expressao_comando: PONTOVIRGULA  */
+#line 269 "cminus.y"
                  {
         (yyval.no) = criarNo("EXP_CMD_VAZIO", NULL, linha);
     }
-#line 1421 "cminus.tab.c"
+#line 1498 "cminus.tab.c"
     break;
 
-  case 29: /* selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando ELSE comando  */
-#line 186 "cminus.y"
+  case 34: /* selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando ELSE comando  */
+#line 276 "cminus.y"
                                                                      {
         (yyval.no) = criarNo("IFELSE", NULL, linha);
-        adicionarFilho((yyval.no), (yyvsp[-4].no));
-        adicionarFilho((yyval.no), (yyvsp[-2].no));
-        adicionarFilho((yyval.no), (yyvsp[0].no));
+        adicionarFilho((yyval.no), (yyvsp[-4].no));  /* condicao */
+        adicionarFilho((yyval.no), (yyvsp[-2].no));  /* bloco then */
+        adicionarFilho((yyval.no), (yyvsp[0].no));  /* bloco else */
     }
-#line 1432 "cminus.tab.c"
+#line 1509 "cminus.tab.c"
     break;
 
-  case 30: /* selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando  */
-#line 192 "cminus.y"
+  case 35: /* selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando  */
+#line 282 "cminus.y"
                                                         {
         (yyval.no) = criarNo("IF", NULL, linha);
-        adicionarFilho((yyval.no), (yyvsp[-2].no));
-        adicionarFilho((yyval.no), (yyvsp[0].no));
+        adicionarFilho((yyval.no), (yyvsp[-2].no));  /* condicao */
+        adicionarFilho((yyval.no), (yyvsp[0].no));  /* bloco then */
     }
-#line 1442 "cminus.tab.c"
+#line 1519 "cminus.tab.c"
     break;
 
-  case 31: /* iteracao_comando: WHILE ABREPARENTESES expressao FECHAPARENTESES comando  */
-#line 200 "cminus.y"
+  case 36: /* iteracao_comando: WHILE ABREPARENTESES expressao FECHAPARENTESES comando  */
+#line 291 "cminus.y"
                                                            {
         (yyval.no) = criarNo("WHILE", NULL, linha);
-        adicionarFilho((yyval.no), (yyvsp[-2].no));
-        adicionarFilho((yyval.no), (yyvsp[0].no));
+        adicionarFilho((yyval.no), (yyvsp[-2].no));  /* condicao */
+        adicionarFilho((yyval.no), (yyvsp[0].no));  /* corpo do loop */
     }
-#line 1452 "cminus.tab.c"
+#line 1529 "cminus.tab.c"
     break;
 
-  case 32: /* retorno_comando: RETURN PONTOVIRGULA  */
-#line 208 "cminus.y"
+  case 37: /* retorno_comando: RETURN PONTOVIRGULA  */
+#line 300 "cminus.y"
                         {
         (yyval.no) = criarNo("RETURN", NULL, linha);
     }
-#line 1460 "cminus.tab.c"
+#line 1537 "cminus.tab.c"
     break;
 
-  case 33: /* retorno_comando: RETURN expressao PONTOVIRGULA  */
-#line 211 "cminus.y"
+  case 38: /* retorno_comando: RETURN expressao PONTOVIRGULA  */
+#line 303 "cminus.y"
                                   {
         (yyval.no) = criarNo("RETURN", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1469 "cminus.tab.c"
+#line 1546 "cminus.tab.c"
     break;
 
-  case 34: /* expressao: var ATRIBUICAO expressao  */
-#line 218 "cminus.y"
+  case 39: /* expressao: var ATRIBUICAO expressao  */
+#line 311 "cminus.y"
                              {
         (yyval.no) = criarNo("ATRIB", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1479 "cminus.tab.c"
+#line 1556 "cminus.tab.c"
     break;
 
-  case 35: /* expressao: simples_expressao  */
-#line 223 "cminus.y"
+  case 40: /* expressao: simples_expressao  */
+#line 316 "cminus.y"
                       { (yyval.no) = (yyvsp[0].no); }
-#line 1485 "cminus.tab.c"
+#line 1562 "cminus.tab.c"
     break;
 
-  case 36: /* simples_expressao: soma_expressao relacional soma_expressao  */
-#line 227 "cminus.y"
+  case 41: /* simples_expressao: soma_expressao relacional soma_expressao  */
+#line 321 "cminus.y"
                                              {
         (yyval.no) = criarNo("REL", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[-1].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1496 "cminus.tab.c"
+#line 1573 "cminus.tab.c"
     break;
 
-  case 37: /* simples_expressao: soma_expressao  */
-#line 233 "cminus.y"
+  case 42: /* simples_expressao: soma_expressao  */
+#line 327 "cminus.y"
                    { (yyval.no) = (yyvsp[0].no); }
-#line 1502 "cminus.tab.c"
+#line 1579 "cminus.tab.c"
     break;
 
-  case 38: /* relacional: MENOR  */
-#line 237 "cminus.y"
+  case 43: /* relacional: MENOR  */
+#line 332 "cminus.y"
                  { (yyval.no) = criarNo("OP", "<", linha); }
-#line 1508 "cminus.tab.c"
+#line 1585 "cminus.tab.c"
     break;
 
-  case 39: /* relacional: MAIOR  */
-#line 238 "cminus.y"
+  case 44: /* relacional: MAIOR  */
+#line 333 "cminus.y"
                  { (yyval.no) = criarNo("OP", ">", linha); }
-#line 1514 "cminus.tab.c"
+#line 1591 "cminus.tab.c"
     break;
 
-  case 40: /* relacional: MENORIGUAL  */
-#line 239 "cminus.y"
+  case 45: /* relacional: MENORIGUAL  */
+#line 334 "cminus.y"
                  { (yyval.no) = criarNo("OP", "<=", linha); }
-#line 1520 "cminus.tab.c"
+#line 1597 "cminus.tab.c"
     break;
 
-  case 41: /* relacional: MAIORIGUAL  */
-#line 240 "cminus.y"
+  case 46: /* relacional: MAIORIGUAL  */
+#line 335 "cminus.y"
                  { (yyval.no) = criarNo("OP", ">=", linha); }
-#line 1526 "cminus.tab.c"
+#line 1603 "cminus.tab.c"
     break;
 
-  case 42: /* relacional: IGUAL  */
-#line 241 "cminus.y"
+  case 47: /* relacional: IGUAL  */
+#line 336 "cminus.y"
                  { (yyval.no) = criarNo("OP", "==", linha); }
-#line 1532 "cminus.tab.c"
+#line 1609 "cminus.tab.c"
     break;
 
-  case 43: /* relacional: DIFERENTE  */
-#line 242 "cminus.y"
+  case 48: /* relacional: DIFERENTE  */
+#line 337 "cminus.y"
                  { (yyval.no) = criarNo("OP", "!=", linha); }
-#line 1538 "cminus.tab.c"
+#line 1615 "cminus.tab.c"
     break;
 
-  case 44: /* soma_expressao: soma_expressao MAIS termo  */
-#line 246 "cminus.y"
+  case 49: /* soma_expressao: soma_expressao MAIS termo  */
+#line 342 "cminus.y"
                               {
         (yyval.no) = criarNo("SOMA", "+", linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1548 "cminus.tab.c"
+#line 1625 "cminus.tab.c"
     break;
 
-  case 45: /* soma_expressao: soma_expressao MENOS termo  */
-#line 251 "cminus.y"
+  case 50: /* soma_expressao: soma_expressao MENOS termo  */
+#line 347 "cminus.y"
                                {
         (yyval.no) = criarNo("SUB", "-", linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1558 "cminus.tab.c"
+#line 1635 "cminus.tab.c"
     break;
 
-  case 46: /* soma_expressao: termo  */
-#line 256 "cminus.y"
+  case 51: /* soma_expressao: termo  */
+#line 352 "cminus.y"
           { (yyval.no) = (yyvsp[0].no); }
-#line 1564 "cminus.tab.c"
+#line 1641 "cminus.tab.c"
     break;
 
-  case 47: /* termo: termo VEZES fator  */
-#line 260 "cminus.y"
+  case 52: /* termo: termo VEZES fator  */
+#line 357 "cminus.y"
                       {
         (yyval.no) = criarNo("MULT", "*", linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1574 "cminus.tab.c"
+#line 1651 "cminus.tab.c"
     break;
 
-  case 48: /* termo: termo DIVIDIDO fator  */
-#line 265 "cminus.y"
+  case 53: /* termo: termo DIVIDIDO fator  */
+#line 362 "cminus.y"
                          {
         (yyval.no) = criarNo("DIV", "/", linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1584 "cminus.tab.c"
+#line 1661 "cminus.tab.c"
     break;
 
-  case 49: /* termo: fator  */
-#line 270 "cminus.y"
+  case 54: /* termo: fator  */
+#line 367 "cminus.y"
           { (yyval.no) = (yyvsp[0].no); }
-#line 1590 "cminus.tab.c"
+#line 1667 "cminus.tab.c"
     break;
 
-  case 50: /* fator: ABREPARENTESES expressao FECHAPARENTESES  */
-#line 274 "cminus.y"
+  case 55: /* fator: ABREPARENTESES expressao FECHAPARENTESES  */
+#line 372 "cminus.y"
                                              { (yyval.no) = (yyvsp[-1].no); }
-#line 1596 "cminus.tab.c"
+#line 1673 "cminus.tab.c"
     break;
 
-  case 51: /* fator: var  */
-#line 275 "cminus.y"
+  case 56: /* fator: var  */
+#line 373 "cminus.y"
         { (yyval.no) = (yyvsp[0].no); }
-#line 1602 "cminus.tab.c"
+#line 1679 "cminus.tab.c"
     break;
 
-  case 52: /* fator: NUM  */
-#line 276 "cminus.y"
+  case 57: /* fator: NUM  */
+#line 374 "cminus.y"
         {
         char numstr[16];
         sprintf(numstr, "%d", (yyvsp[0].num));
         (yyval.no) = criarNo("NUM", numstr, linha);
     }
-#line 1612 "cminus.tab.c"
+#line 1689 "cminus.tab.c"
     break;
 
-  case 53: /* var: ID  */
-#line 284 "cminus.y"
+  case 58: /* fator: ID ABREPARENTESES FECHAPARENTESES  */
+#line 379 "cminus.y"
+                                      {
+        (yyval.no) = criarNo("CHAMADA_FUNCAO", (yyvsp[-2].str), linha);
+    }
+#line 1697 "cminus.tab.c"
+    break;
+
+  case 59: /* fator: ID ABREPARENTESES args_funcao FECHAPARENTESES  */
+#line 382 "cminus.y"
+                                                  {
+        (yyval.no) = criarNo("CHAMADA_FUNCAO", (yyvsp[-3].str), linha);
+        adicionarFilho((yyval.no), (yyvsp[-1].no));
+    }
+#line 1706 "cminus.tab.c"
+    break;
+
+  case 60: /* args_funcao: expressao  */
+#line 390 "cminus.y"
+              {
+        (yyval.no) = criarNo("ARGS", NULL, linha);
+        adicionarFilho((yyval.no), (yyvsp[0].no));
+    }
+#line 1715 "cminus.tab.c"
+    break;
+
+  case 61: /* args_funcao: args_funcao VIRGULA expressao  */
+#line 394 "cminus.y"
+                                  {
+        adicionarFilho((yyvsp[-2].no), (yyvsp[0].no));
+        (yyval.no) = (yyvsp[-2].no);
+    }
+#line 1724 "cminus.tab.c"
+    break;
+
+  case 62: /* var: ID  */
+#line 402 "cminus.y"
          {
         (yyval.no) = criarNo("ID", (yyvsp[0].str), linha);
     }
-#line 1620 "cminus.tab.c"
+#line 1732 "cminus.tab.c"
     break;
 
-  case 54: /* var: ID ABRECOLCHETE expressao FECHACOLCHETE  */
-#line 287 "cminus.y"
+  case 63: /* var: ID ABRECOLCHETE expressao FECHACOLCHETE  */
+#line 405 "cminus.y"
                                               {
         (yyval.no) = criarNo("ID_ARRAY", (yyvsp[-3].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1629 "cminus.tab.c"
+#line 1741 "cminus.tab.c"
     break;
 
 
-#line 1633 "cminus.tab.c"
+#line 1745 "cminus.tab.c"
 
       default: break;
     }
@@ -1822,9 +1934,18 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 293 "cminus.y"
+#line 411 "cminus.y"
 
 
+/* ============================================================================
+ * FUNCAO MAIN
+ * 
+ * Ponto de entrada do compilador. Executa as fases:
+ * 1. Analise Sintatica (parser)
+ * 2. Analise Semantica
+ * 3. Imprime arvore sintatica e tabela de simbolos
+ * ============================================================================
+ */
 int main(int argc, char *argv[]) {
     if (argc == 2) {
         FILE *fp = fopen(argv[1], "r");
@@ -1835,20 +1956,20 @@ int main(int argc, char *argv[]) {
         extern FILE *yyin;
         yyin = fp;
 
-        /* Desliga o modo debug do Bison para saida limpa */
+        /* Desliga debug para saida limpa */
         yydebug = 0;
 
         printf("=== COMPILADOR C- ===\n\n");
         printf("Analisando arquivo: %s\n\n", argv[1]);
 
-        /* Fase 1: Analise Sintatica (Parser) */
+        /* FASE 1: Analise Sintatica */
         printf("--- FASE 1: ANALISE SINTATICA ---\n");
         int resultado = yyparse();
         
         if (resultado == 0) {
             printf("Analise sintatica concluida com sucesso!\n\n");
             
-            /* Fase 2: Analise Semantica */
+            /* FASE 2: Analise Semantica */
             printf("--- FASE 2: ANALISE SEMANTICA ---\n");
             int erros = analisarSemantica(raiz);
             
@@ -1858,14 +1979,23 @@ int main(int argc, char *argv[]) {
                 printf("\nTotal de erros semanticos: %d\n", erros);
             }
             
-            /* Imprime a Arvore Sintatica */
+            /* Imprime Arvore Sintatica */
             printf("\n--- ARVORE SINTATICA ---\n");
             imprimirArvore(raiz, 0);
             
-            /* Imprime a Tabela de Simbolos */
+            /* FASE 3: Geracao de Codigo Intermediario */
+            printf("\n--- FASE 3: GERACAO DE CODIGO INTERMEDIARIO ---\n");
+            int numInstrucoes = gerarCodigoIntermediario(raiz);
+            printf("Codigo intermediario gerado: %d instrucoes\n", numInstrucoes);
+            
+            /* Imprime Codigo Intermediario */
+            imprimirCodigoIntermediario();
+            
+            /* Imprime Tabela de Simbolos */
             imprimirTabelaSimbolos();
             
             /* Libera memoria */
+            liberarCodigoIntermediario();
             liberarTabelaSimbolos();
         } else {
             printf("\nCompilacao abortada devido a erros sintaticos.\n");

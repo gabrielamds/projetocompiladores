@@ -145,11 +145,88 @@ static void analisarNo(NoArvore *no) {
      * Verifica o lado esquerdo (variavel) e analisa a expressao
      * ---------------------------------------------------------------- */
     else if (strcmp(no->tipo, "ATRIB") == 0) {
-        if (no->nFilhos >= 1) {
-            analisarNo(no->filhos[0]);  /* lado esquerdo */
+        // Verifica tipos do lado esquerdo e direito
+        char tipo_esq[20] = "", tipo_dir[20] = "";
+        // Lado esquerdo (variável)
+        if (no->nFilhos >= 1 && no->filhos[0] != NULL) {
+            analisarNo(no->filhos[0]);
+            NoArvore *esq = no->filhos[0];
+            if (strcmp(esq->tipo, "ID") == 0 || strcmp(esq->tipo, "ID_ARRAY") == 0) {
+                Simbolo *s = buscarSimbolo(esq->valor, escopoAtual);
+                if (!s && strcmp(esq->tipo, "ID") == 0) s = buscarSimbolo(esq->valor, "global");
+                if (s) {
+                    strcpy(tipo_esq, s->tipo);
+                    // Se for acesso a array, remove []
+                    if (strcmp(esq->tipo, "ID_ARRAY") == 0 && strlen(tipo_esq) > 2) {
+                        tipo_esq[strlen(tipo_esq) - 2] = '\0';
+                    }
+                }
+            }
         }
-        if (no->nFilhos >= 2) {
-            analisarNo(no->filhos[1]);  /* lado direito */
+        // Lado direito (expressão)
+        if (no->nFilhos >= 2 && no->filhos[1] != NULL) {
+            analisarNo(no->filhos[1]);
+            NoArvore *dir = no->filhos[1];
+            if (strcmp(dir->tipo, "ID") == 0 || strcmp(dir->tipo, "ID_ARRAY") == 0) {
+                Simbolo *s = buscarSimbolo(dir->valor, escopoAtual);
+                if (!s && strcmp(dir->tipo, "ID") == 0) s = buscarSimbolo(dir->valor, "global");
+                if (s) {
+                    strcpy(tipo_dir, s->tipo);
+                    // Se for acesso a array, remove []
+                    if (strcmp(dir->tipo, "ID_ARRAY") == 0 && strlen(tipo_dir) > 2) {
+                        tipo_dir[strlen(tipo_dir) - 2] = '\0';
+                    }
+                }
+            } else if (strcmp(dir->tipo, "NUM") == 0) {
+                strcpy(tipo_dir, "int");
+            }
+        }
+        // Verifica compatibilidade de tipos (simples: ambos int)
+        if (tipo_esq[0] && tipo_dir[0] && strcmp(tipo_esq, tipo_dir) != 0) {
+            printf("ERRO SEMANTICO: atribuicao de tipo incompatível ('%s' = '%s') LINHA: %d\n", tipo_esq, tipo_dir, no->linha);
+            errosSemanticos++;
+        }
+    }
+    /* Verificação de tipos em operações aritméticas */
+    else if (strcmp(no->tipo, "SOMA") == 0 || strcmp(no->tipo, "SUB") == 0 || strcmp(no->tipo, "MULT") == 0 || strcmp(no->tipo, "DIV") == 0) {
+        char tipo_esq[20] = "", tipo_dir[20] = "";
+        if (no->nFilhos >= 1 && no->filhos[0] != NULL) {
+            analisarNo(no->filhos[0]);
+            NoArvore *esq = no->filhos[0];
+            if (strcmp(esq->tipo, "ID") == 0 || strcmp(esq->tipo, "ID_ARRAY") == 0) {
+                Simbolo *s = buscarSimbolo(esq->valor, escopoAtual);
+                if (!s && strcmp(esq->tipo, "ID") == 0) s = buscarSimbolo(esq->valor, "global");
+                if (s) {
+                    strcpy(tipo_esq, s->tipo);
+                    // Se for acesso a array, remove []
+                    if (strcmp(esq->tipo, "ID_ARRAY") == 0 && strlen(tipo_esq) > 2) {
+                        tipo_esq[strlen(tipo_esq) - 2] = '\0';
+                    }
+                }
+            } else if (strcmp(esq->tipo, "NUM") == 0) {
+                strcpy(tipo_esq, "int");
+            }
+        }
+        if (no->nFilhos >= 2 && no->filhos[1] != NULL) {
+            analisarNo(no->filhos[1]);
+            NoArvore *dir = no->filhos[1];
+            if (strcmp(dir->tipo, "ID") == 0 || strcmp(dir->tipo, "ID_ARRAY") == 0) {
+                Simbolo *s = buscarSimbolo(dir->valor, escopoAtual);
+                if (!s && strcmp(dir->tipo, "ID") == 0) s = buscarSimbolo(dir->valor, "global");
+                if (s) {
+                    strcpy(tipo_dir, s->tipo);
+                    // Se for acesso a array, remove []
+                    if (strcmp(dir->tipo, "ID_ARRAY") == 0 && strlen(tipo_dir) > 2) {
+                        tipo_dir[strlen(tipo_dir) - 2] = '\0';
+                    }
+                }
+            } else if (strcmp(dir->tipo, "NUM") == 0) {
+                strcpy(tipo_dir, "int");
+            }
+        }
+        if ((tipo_esq[0] && strcmp(tipo_esq, "int") != 0) || (tipo_dir[0] && strcmp(tipo_dir, "int") != 0)) {
+            printf("ERRO SEMANTICO: operacao aritmetica com tipo nao inteiro ('%s' e '%s') LINHA: %d\n", tipo_esq, tipo_dir, no->linha);
+            errosSemanticos++;
         }
     }
     
