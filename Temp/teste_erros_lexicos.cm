@@ -1,0 +1,27 @@
+/* Teste de Erros Léxicos - Caracteres Inválidos */
+
+int x;
+
+void main(void) {
+    int a;
+    
+    /* Erro 1: @ não é um operador válido */
+    a = 5 @ 3;
+    
+    /* Erro 2: $ não é um caractere válido */
+    a = $10;
+    
+    /* Erro 3: # não é um operador válido */
+    a = 10 # 2;
+    
+    /* Erro 4: & não é reconhecido (apenas =, ==, etc) */
+    a = 5 & 3;
+    
+    /* Erro 5: | não é reconhecido */
+    a = 5 | 3;
+    
+    /* Erro 6: ^ não é reconhecido */
+    a = 5 ^ 3;
+    
+    return 0;
+}

@@ -1,0 +1,12 @@
+/* Arquivo com APENAS ERRO LEXICO
+   Todos os tokens são válidos, mas tem um caractere especial inválido */
+
+int x;
+
+void main(void) {
+    int a;
+    
+    a = 5 @ 3;    /* @ é um caractere inválido */
+    
+    return 0;
+}

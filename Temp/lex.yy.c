@@ -162,8 +162,27 @@ extern FILE *yyin, *yyout;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
     
-    #define YY_LESS_LINENO(n)
-    #define YY_LINENO_REWIND_TO(ptr)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE yylex.
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                int yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
+    #define YY_LINENO_REWIND_TO(dst) \
+            do {\
+                const char *p;\
+                for ( p = yy_cp-1; p >= (dst); --p)\
+                    if ( *p == '\n' )\
+                        --yylineno;\
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -465,6 +484,12 @@ static const flex_int16_t yy_chk[111] =
        61,   61,   61,   61,   61,   61,   61,   61,   61,   61
     } ;
 
+/* Table of booleans, true if rule could match eol. */
+static const flex_int32_t yy_rule_can_match_eol[34] =
+    {   0,
+1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,     };
+
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
 
@@ -488,9 +513,136 @@ char *yytext;
 
 int linha = 1;
 extern FILE *yyin;
-#line 491 "lex.yy.c"
+extern int yylineno;  /* Variável do Flex que rastreia o número da linha */
+
+/* Tabela de tokens para registro */
+typedef struct {
+    int numero;           /* Número do token */
+    char tipo[50];        /* Tipo do token (IF, ID, NUM, etc) */
+    char lexema[100];     /* Valor original do código */
+    int linhaToken;       /* Linha onde foi encontrado */
+} Token;
+
+/* Tabela de erros léxicos */
+typedef struct {
+    int numero;           /* Número do erro */
+    char caractere[10];   /* Caractere inválido */
+    int linhaErro;        /* Linha onde ocorreu */
+} ErroLexico;
+
+Token *tabela_tokens = NULL;
+int total_tokens = 0;
+int capacidade_tokens = 100;
+
+ErroLexico *tabela_erros_lexicos = NULL;
+int total_erros_lexicos = 0;
+int capacidade_erros = 50;
+
+void registrarToken(const char *tipo, const char *lexema) {
+    if (tabela_tokens == NULL) {
+        tabela_tokens = (Token*)malloc(sizeof(Token) * capacidade_tokens);
+    }
+    
+    if (total_tokens >= capacidade_tokens) {
+        capacidade_tokens *= 2;
+        tabela_tokens = (Token*)realloc(tabela_tokens, sizeof(Token) * capacidade_tokens);
+    }
+    
+    tabela_tokens[total_tokens].numero = total_tokens + 1;
+    strncpy(tabela_tokens[total_tokens].tipo, tipo, sizeof(tabela_tokens[total_tokens].tipo) - 1);
+    tabela_tokens[total_tokens].tipo[sizeof(tabela_tokens[total_tokens].tipo) - 1] = '\0';
+    strncpy(tabela_tokens[total_tokens].lexema, lexema, sizeof(tabela_tokens[total_tokens].lexema) - 1);
+    tabela_tokens[total_tokens].lexema[sizeof(tabela_tokens[total_tokens].lexema) - 1] = '\0';
+    tabela_tokens[total_tokens].linhaToken = yylineno;  /* Usar yylineno do Flex */
+    total_tokens++;
+}
+
+void registrarErroLexico(const char *caractere) {
+    if (tabela_erros_lexicos == NULL) {
+        tabela_erros_lexicos = (ErroLexico*)malloc(sizeof(ErroLexico) * capacidade_erros);
+    }
+    
+    if (total_erros_lexicos >= capacidade_erros) {
+        capacidade_erros *= 2;
+        tabela_erros_lexicos = (ErroLexico*)realloc(tabela_erros_lexicos, sizeof(ErroLexico) * capacidade_erros);
+    }
+    
+    tabela_erros_lexicos[total_erros_lexicos].numero = total_erros_lexicos + 1;
+    strncpy(tabela_erros_lexicos[total_erros_lexicos].caractere, caractere, sizeof(tabela_erros_lexicos[total_erros_lexicos].caractere) - 1);
+    tabela_erros_lexicos[total_erros_lexicos].caractere[sizeof(tabela_erros_lexicos[total_erros_lexicos].caractere) - 1] = '\0';
+    tabela_erros_lexicos[total_erros_lexicos].linhaErro = yylineno;
+    total_erros_lexicos++;
+}
+
+void imprimirTabelaTokens(void) {
+    if (total_tokens == 0) {
+        printf("Nenhum token foi reconhecido.\n");
+        return;
+    }
+    
+    printf("\n");
+    printf("==========================================================================\n");
+    printf("                   TABELA DE TOKENS (ANALISE LEXICA)\n");
+    printf("==========================================================================\n\n");
+    
+    printf("%-8s %-20s %-30s %-10s\n", "Num", "Tipo", "Lexema", "Linha");
+    printf("--------------------------------------------------------------------------\n");
+    
+    for (int i = 0; i < total_tokens; i++) {
+        printf("%-8d %-20s %-30s %-10d\n", 
+               tabela_tokens[i].numero,
+               tabela_tokens[i].tipo,
+               tabela_tokens[i].lexema,
+               tabela_tokens[i].linhaToken);
+    }
+    
+    printf("\nTotal de tokens: %d\n\n", total_tokens);
+}
+
+void imprimirErrosLexicos(void) {
+    if (total_erros_lexicos == 0) {
+        printf("Nenhum erro lexico encontrado.\n\n");
+        return;
+    }
+    
+    printf("\n");
+    printf("==========================================================================\n");
+    printf("                     ERROS LEXICOS ENCONTRADOS\n");
+    printf("==========================================================================\n\n");
+    
+    printf("%-8s %-20s %-10s\n", "Num", "Caractere Inválido", "Linha");
+    printf("--------------------------------------------------------------------------\n");
+    
+    for (int i = 0; i < total_erros_lexicos; i++) {
+        printf("%-8d %-20s %-10d\n", 
+               tabela_erros_lexicos[i].numero,
+               tabela_erros_lexicos[i].caractere,
+               tabela_erros_lexicos[i].linhaErro);
+    }
+    
+    printf("\nTotal de erros lexicos: %d\n\n", total_erros_lexicos);
+}
+
+void resetarTabelaTokens(void) {
+    if (tabela_tokens != NULL) {
+        free(tabela_tokens);
+        tabela_tokens = NULL;
+    }
+    total_tokens = 0;
+    capacidade_tokens = 100;
+}
+
+void resetarErrosLexicos(void) {
+    if (tabela_erros_lexicos != NULL) {
+        free(tabela_erros_lexicos);
+        tabela_erros_lexicos = NULL;
+    }
+    total_erros_lexicos = 0;
+    capacidade_erros = 50;
+}
+#line 643 "lex.yy.c"
 /* Macros */
-#line 493 "lex.yy.c"
+#line 645 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -707,10 +859,10 @@ YY_DECL
 		}
 
 	{
-#line 18 "cminus.l"
+#line 147 "cminus.l"
 
 
-#line 713 "lex.yy.c"
+#line 865 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -756,6 +908,16 @@ yy_find_action:
 
 		YY_DO_BEFORE_ACTION;
 
+		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
+			{
+			int yyl;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					
+    yylineno++;
+;
+			}
+
 do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
@@ -770,177 +932,179 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 20 "cminus.l"
+#line 149 "cminus.l"
 { /* ignora comentario de bloco */ }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 21 "cminus.l"
+#line 150 "cminus.l"
 { /* ignora comentario de linha */ }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 23 "cminus.l"
-{ return IF; }
+#line 152 "cminus.l"
+{ registrarToken("IF", yytext); return IF; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 24 "cminus.l"
-{ return ELSE; }
+#line 153 "cminus.l"
+{ registrarToken("ELSE", yytext); return ELSE; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 25 "cminus.l"
-{ return WHILE; }
+#line 154 "cminus.l"
+{ registrarToken("WHILE", yytext); return WHILE; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 26 "cminus.l"
-{ return RETURN; }
+#line 155 "cminus.l"
+{ registrarToken("RETURN", yytext); return RETURN; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 27 "cminus.l"
-{ return INT; }
+#line 156 "cminus.l"
+{ registrarToken("INT", yytext); return INT; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 28 "cminus.l"
-{ return VOID; }
+#line 157 "cminus.l"
+{ registrarToken("VOID", yytext); return VOID; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 30 "cminus.l"
-{ return IGUAL; }
+#line 159 "cminus.l"
+{ registrarToken("IGUAL", yytext); return IGUAL; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 31 "cminus.l"
-{ return DIFERENTE; }
+#line 160 "cminus.l"
+{ registrarToken("DIFERENTE", yytext); return DIFERENTE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 32 "cminus.l"
-{ return MENORIGUAL; }
+#line 161 "cminus.l"
+{ registrarToken("MENORIGUAL", yytext); return MENORIGUAL; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 33 "cminus.l"
-{ return MAIORIGUAL; }
+#line 162 "cminus.l"
+{ registrarToken("MAIORIGUAL", yytext); return MAIORIGUAL; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 34 "cminus.l"
-{ return MENOR; }
+#line 163 "cminus.l"
+{ registrarToken("MENOR", yytext); return MENOR; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 35 "cminus.l"
-{ return MAIOR; }
+#line 164 "cminus.l"
+{ registrarToken("MAIOR", yytext); return MAIOR; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 36 "cminus.l"
-{ return ATRIBUICAO; }
+#line 165 "cminus.l"
+{ registrarToken("ATRIBUICAO", yytext); return ATRIBUICAO; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 37 "cminus.l"
-{ return MAIS; }
+#line 166 "cminus.l"
+{ registrarToken("MAIS", yytext); return MAIS; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 38 "cminus.l"
-{ return MENOS; }
+#line 167 "cminus.l"
+{ registrarToken("MENOS", yytext); return MENOS; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 39 "cminus.l"
-{ return VEZES; }
+#line 168 "cminus.l"
+{ registrarToken("VEZES", yytext); return VEZES; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 40 "cminus.l"
-{ return DIVIDIDO; }
+#line 169 "cminus.l"
+{ registrarToken("DIVIDIDO", yytext); return DIVIDIDO; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 41 "cminus.l"
-{ return PONTOVIRGULA; }
+#line 170 "cminus.l"
+{ registrarToken("PONTOVIRGULA", yytext); return PONTOVIRGULA; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 42 "cminus.l"
-{ return VIRGULA; }
+#line 171 "cminus.l"
+{ registrarToken("VIRGULA", yytext); return VIRGULA; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 43 "cminus.l"
-{ return ABREPARENTESES; }
+#line 172 "cminus.l"
+{ registrarToken("ABREPARENTESES", yytext); return ABREPARENTESES; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 44 "cminus.l"
-{ return FECHAPARENTESES; }
+#line 173 "cminus.l"
+{ registrarToken("FECHAPARENTESES", yytext); return FECHAPARENTESES; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 45 "cminus.l"
-{ return ABRECOLCHETE; }
+#line 174 "cminus.l"
+{ registrarToken("ABRECOLCHETE", yytext); return ABRECOLCHETE; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 46 "cminus.l"
-{ return FECHACOLCHETE; }
+#line 175 "cminus.l"
+{ registrarToken("FECHACOLCHETE", yytext); return FECHACOLCHETE; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 47 "cminus.l"
-{ return ABRECHAVE; }
+#line 176 "cminus.l"
+{ registrarToken("ABRECHAVE", yytext); return ABRECHAVE; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 48 "cminus.l"
-{ return FECHACHAVE; }
+#line 177 "cminus.l"
+{ registrarToken("FECHACHAVE", yytext); return FECHACHAVE; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 50 "cminus.l"
+#line 179 "cminus.l"
 {
     yylval.str = strdup(yytext);   /* passa lexema para o parser */
+    registrarToken("ID", yytext);
     return ID;
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 55 "cminus.l"
+#line 185 "cminus.l"
 {
     yylval.num = atoi(yytext);     /* passa valor inteiro para o parser */
+    registrarToken("NUM", yytext);
     return NUM;
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 60 "cminus.l"
+#line 191 "cminus.l"
 { /* ignora espacos */ }
 	YY_BREAK
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 62 "cminus.l"
+#line 193 "cminus.l"
 { linha++; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 64 "cminus.l"
-{ printf("ERRO LEXICO: '%s' LINHA: %d\n", yytext, linha); }
+#line 195 "cminus.l"
+{ registrarErroLexico(yytext); }  /* Registra erro mas continua */
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 66 "cminus.l"
+#line 197 "cminus.l"
 ECHO;
 	YY_BREAK
-#line 943 "lex.yy.c"
+#line 1107 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1308,6 +1472,10 @@ static int yy_get_next_buffer (void)
 
 	*--yy_cp = (char) c;
 
+    if ( c == '\n' ){
+        --yylineno;
+    }
+
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
@@ -1384,6 +1552,11 @@ static int yy_get_next_buffer (void)
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
+
+	if ( c == '\n' )
+		
+    yylineno++;
+;
 
 	return c;
 }
@@ -1851,6 +2024,9 @@ static int yy_init_globals (void)
      * This function is called from yylex_destroy(), so don't allocate here.
      */
 
+    /* We do not touch yylineno unless the option is enabled. */
+    yylineno =  1;
+    
     (yy_buffer_stack) = NULL;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
@@ -1945,7 +2121,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 66 "cminus.l"
+#line 197 "cminus.l"
 
 
 int yywrap(void) {

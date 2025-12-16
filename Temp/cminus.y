@@ -11,6 +11,12 @@
 extern int yylex();
 extern int linha;
 
+/* Funcoes externas da tabela de tokens (do scanner) */
+extern void imprimirTabelaTokens(void);
+extern void resetarTabelaTokens(void);
+extern void imprimirErrosLexicos(void);
+extern void resetarErrosLexicos(void);
+
 /* Raiz da arvore sintatica - sera preenchida durante o parsing */
 NoArvore* raiz = NULL;
 
@@ -380,9 +386,22 @@ int main(int argc, char *argv[]) {
         printf("=== COMPILADOR C- ===\n\n");
         printf("Analisando arquivo: %s\n\n", argv[1]);
 
-        /* FASE 1: Analise Sintatica */
+        /* Reseta a tabela de tokens e erros */
+        resetarTabelaTokens();
+        resetarErrosLexicos();
+
+        /* FASE 0: Analise Lexica (Tabela de Tokens) */
+        printf("--- FASE 0: ANALISE LEXICA ---\n");
+
+        /* FASE 1: Analise Sintatica (constrói a árvore e captura tokens) */
         printf("--- FASE 1: ANALISE SINTATICA ---\n");
         int resultado = yyparse();
+        
+        /* Imprime a tabela de tokens após a análise sintática */
+        imprimirTabelaTokens();
+        
+        /* Imprime erros léxicos encontrados */
+        imprimirErrosLexicos();
         
         if (resultado == 0) {
             printf("Analise sintatica concluida com sucesso!\n\n");

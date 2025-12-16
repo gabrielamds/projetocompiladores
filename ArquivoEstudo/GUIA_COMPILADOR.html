@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Completo - Compilador C-</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        h1 {
+            color: #1a1a1a;
+            border-bottom: 4px solid #2196F3;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h2 {
+            color: #1976D2;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-left: 5px solid #2196F3;
+            padding-left: 15px;
+            font-size: 1.5em;
+        }
+        h3 {
+            color: #455A64;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        h4 {
+            color: #546E7A;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        .secao {
+            background-color: white;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-top: 4px solid #2196F3;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d32f2f;
+        }
+        pre {
+            background-color: #263238;
+            color: #aed581;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border-left: 4px solid #2196F3;
+            line-height: 1.5;
+        }
+        .exemplo {
+            background-color: #e3f2fd;
+            border-left: 5px solid #2196F3;
+            border-radius: 4px;
+            padding: 18px;
+            margin: 18px 0;
+        }
+        .exemplo strong {
+            color: #1565C0;
+        }
+        .teoria {
+            background-color: #f3e5f5;
+            border-left: 5px solid #7b1fa2;
+            border-radius: 4px;
+            padding: 18px;
+            margin: 18px 0;
+        }
+        .teoria strong {
+            color: #6a1b9a;
+        }
+        .importante {
+            background-color: #fff8e1;
+            border-left: 5px solid #f57f17;
+            border-radius: 4px;
+            padding: 18px;
+            margin: 18px 0;
+        }
+        .importante strong {
+            color: #e65100;
+        }
+        .arquivo {
+            background-color: #e8f5e9;
+            border-left: 5px solid #388e3c;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 15px 0;
+            font-weight: bold;
+            color: #1b5e20;
+        }
+        ul {
+            line-height: 2;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 14px;
+            text-align: left;
+        }
+        th {
+            background-color: #1976D2;
+            color: white;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .nav {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 5px solid #2196F3;
+        }
+        .nav h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        .nav ol {
+            line-height: 2;
+        }
+        .nav a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+        }
+        .explicacao {
+            background-color: #eceff1;
+            border-left: 4px solid #0288d1;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📚 Guia Completo do Compilador C-</h1>
+
+<div class="nav">
+    <h3>📑 Índice de Conteúdo</h3>
+    <ol>
+        <li><a href="#teoria-basica">Teoria Básica de Compiladores</a></li>
+        <li><a href="#analisador-lexico">Analisador Léxico (cminus.l)</a></li>
+        <li><a href="#tabela-simbolos">Tabela de Símbolos (simbolos.h/c)</a></li>
+        <li><a href="#analisador-sintatico">Analisador Sintático (cminus.y)</a></li>
+        <li><a href="#arvore-sintatica">Árvore Sintática (arvore.h/c)</a></li>
+        <li><a href="#analisador-semantico">Analisador Semântico (semantico.h/c)</a></li>
+        <li><a href="#gerador-codigo">Gerador de Código Intermediário (intermediario.h/c)</a></li>
+        <li><a href="#comandos">Comandos de Compilação</a></li>
+    </ol>
+</div>
+
+<div class="secao" id="teoria-basica">
+    <h2>1. Teoria Básica de Compiladores</h2>
+    
+    <h3>O que é um Compilador?</h3>
+    <p>Um <strong>compilador</strong> é um programa que traduz código-fonte escrito em uma linguagem de programação de alto nível para uma representação de mais baixo nível (intermediária ou linguagem de máquina) que pode ser executada por um computador.</p>
+    
+    <div class="teoria">
+        <strong>Processo de Compilação:</strong><br><br>
+        Um compilador funciona através de várias <strong>fases distintas</strong>. Cada fase recebe a saída da fase anterior e produz uma representação mais refinada do programa.
+    </div>
+    
+    <h3>As 4 Fases Principais do Compilador C-</h3>
+    
+    <pre>
+CÓDIGO-FONTE (arquivo.cm)
+        ↓
+        ║
+        ╠═══════════════════════════════════════════════╗
+        ║                                               ║
+    [FASE 1]                                         [FASE 2]
+   ANÁLISE LÉXICA                              ANÁLISE SINTÁTICA
+   (Scanner/Lexer)                             (Parser)
+   
+   Entrada: caracteres                        Entrada: tokens
+   Saída: tokens                              Saída: árvore sintática
+   Ferramenta: Flex (cminus.l)                Ferramenta: Bison (cminus.y)
+        ║                                               ║
+        ║                                               ║
+        ╚═══════════════════════════════════════════════╝
+                            ↓
+                            
+                    [FASE 3]
+                ANÁLISE SEMÂNTICA
+                    
+                Entrada: árvore sintática
+                Saída: árvore validada + tabela de símbolos
+                Arquivo: semantico.c
+                
+                Verificações:
+                - Variáveis declaradas?
+                - Tipos compatíveis?
+                - main() existe?
+                
+                            ↓
+                            
+                    [FASE 4]
+            GERAÇÃO DE CÓDIGO INTERMEDIÁRIO
+            
+                Entrada: árvore sintática
+                Saída: instruções de 3 endereços
+                Arquivo: intermediario.c
+                
+                Formato: resultado = operando1 OP operando2
+    </pre>
+    
+    <h3>Componentes Essenciais</h3>
+    
+    <div class="explicacao">
+        <strong>Tokens:</strong> Unidades básicas do código. Exemplos: <code>int</code>, <code>x</code>, <code>5</code>, <code>+</code>, <code>;</code>
+    </div>
+    
+    <div class="explicacao">
+        <strong>Árvore Sintática (AST):</strong> Representa a estrutura hierárquica do programa. Mostra como os tokens se combinam para formar expressões, comandos e funções.
+    </div>
+    
+    <div class="explicacao">
+        <strong>Tabela de Símbolos:</strong> Banco de dados que mantém informações sobre todas as variáveis e funções: nome, tipo, escopo, linha de declaração.
+    </div>
+    
+    <div class="explicacao">
+        <strong>Código Intermediário:</strong> Forma simplificada do programa que facilita otimizações e tradução para código de máquina.
+    </div>
+</div>
+
+<div class="secao" id="analisador-lexico">
+    <h2>2. Analisador Léxico (cminus.l)</h2>
+    
+    <div class="arquivo">Arquivo: cminus.l</div>
+    
+    <h3>O que faz?</h3>
+    <p>Lê o código-fonte caractere por caractere e identifica <strong>tokens</strong> (palavras-chave, identificadores, números, operadores).</p>
+    
+    <div class="teoria">
+        <strong>Teoria da Análise Léxica:</strong><br><br>
+        A análise léxica é a <strong>primeira fase</strong> do compilador. Seu trabalho é quebrar o código-fonte em pedaços menores e reconhecíveis chamados <strong>tokens</strong>. Para isso, usa <strong>expressões regulares</strong> para definir padrões.
+        <br><br>
+        <strong>Exemplo de Expressão Regular:</strong><br>
+        • <code>[0-9]+</code> = um ou mais dígitos (números inteiros)<br>
+        • <code>[a-zA-Z][a-zA-Z0-9]*</code> = identificadores (variáveis)<br>
+        • <code>"+"|"-"|"*"|"/"</code> = operadores aritméticos<br>
+        <br>
+        O Flex lê essas regras e gera automaticamente um programa em C que reconhece esses padrões. Ele mantém um <strong>autômato finito</strong> (máquina de estados) internamente para reconhecer cada padrão.
+    </div>
+    
+    <div class="exemplo">
+        <strong>Exemplo:</strong><br>
+        <strong>Código-fonte:</strong><br>
+        <code>int x = 5;</code><br><br>
+        
+        <strong>Tokens gerados:</strong>
+        <ul>
+            <li><code>int</code> → INT (palavra-chave)</li>
+            <li><code>x</code> → ID (identificador)</li>
+            <li><code>=</code> → ATRIBUICAO</li>
+            <li><code>5</code> → NUM (número)</li>
+            <li><code>;</code> → PONTOVIRGULA</li>
+        </ul>
+    </div>
+    
+    <h3>Estrutura Detalhada do arquivo cminus.l:</h3>
+    <pre>
+%{
+/* SEÇÃO 1: CÓDIGO C - Declarações e includes
+   Este código é copiado diretamente para o lex.yy.c gerado */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "cminus.tab.h"  /* Headers gerados pelo Bison com definições de tokens */
+
+int linha = 1;  /* Contador de linhas para mensagens de erro */
+
+%}
+
+/* SEÇÃO 2: DEFINIÇÕES - Macros para facilitar a escrita das regras
+   Aqui definimos abreviações para padrões que usaremos repetidamente */
+
+DIGITO      [0-9]           /* Um dígito de 0 a 9 */
+LETRA       [a-zA-Z_]       /* Uma letra (maiúscula, minúscula ou underscore) */
+ID          {LETRA}({LETRA}|{DIGITO})*    /* Identificadores: começam com letra, depois letras ou dígitos */
+NUMERO      {DIGITO}+       /* Números inteiros: um ou mais dígitos */
+
+%%
+/* SEÇÃO 3: REGRAS - Padrões e ações
+   Formato: padrão { código C a executar quando padrão é encontrado } */
+
+/* PALAVRAS-CHAVE - Devem ser testadas ANTES dos identificadores genéricos */
+"if"        { return IF; }          /* Reconhece "if", retorna token IF */
+"else"      { return ELSE; }        /* Reconhece "else", retorna token ELSE */
+"while"     { return WHILE; }       /* Reconhece "while", retorna token WHILE */
+"return"    { return RETURN; }      /* Reconhece "return", retorna token RETURN */
+"int"       { return INT; }         /* Reconhece "int", retorna token INT */
+"void"      { return VOID; }        /* Reconhece "void", retorna token VOID */
+
+/* IDENTIFICADORES - Nomes de variáveis e funções
+   Armazenamos o texto reconhecido em yylval.str para usar depois */
+{ID}        { yylval.str = strdup(yytext);    /* yytext = texto reconhecido */
+              return ID; }
+
+/* NÚMEROS - Convertemos string para inteiro
+   Armazenamos o valor em yylval.num */
+{NUMERO}    { yylval.num = atoi(yytext);      /* atoi converte string para int */
+              return NUM; }
+
+/* OPERADORES ARITMÉTICOS */
+"+"         { return MAIS; }
+"-"         { return MENOS; }
+"*"         { return VEZES; }
+"/"         { return DIVIDIDO; }
+
+/* OPERADOR DE ATRIBUIÇÃO */
+"="         { return ATRIBUICAO; }
+
+/* OPERADORES DE COMPARAÇÃO */
+"=="        { return IGUAL; }
+"!="        { return DIFERENTE; }
+"&lt;"         { return MENOR; }
+"&lt;="        { return MENOR_IGUAL; }
+"&gt;"         { return MAIOR; }
+"&gt;="        { return MAIOR_IGUAL; }
+
+/* DELIMITADORES E PONTUAÇÃO */
+";"         { return PONTOVIRGULA; }
+"("         { return ABREPARENTESES; }
+")"         { return FECHAPARENTESES; }
+"{"         { return ABRECHAVE; }
+"}"         { return FECHACHAVE; }
+"["         { return ABRECOLCHETE; }
+"]"         { return FECHACOLCHETE; }
+","         { return VIRGULA; }
+
+/* ESPAÇOS EM BRANCO - Ignoramos (não geram tokens)
+   Úteis para separar tokens mas sem significado léxico */
+[ \t]+      { /* Ignora espaços e tabulações */ }
+
+/* QUEBRA DE LINHA - Incrementa contador de linhas
+   Importante para mensagens de erro com número de linha correto */
+\n          { linha++; }
+
+/* CARACTERE DESCONHECIDO - Erro léxico
+   . representa qualquer caractere que não foi capturado pelas regras anteriores */
+.           { printf("ERRO LEXICO: '%s' LINHA: %d\n", yytext, linha); }
+
+%%
+
+/* SEÇÃO 4: CÓDIGO C - Funções auxiliares (opcionais)
+   Neste projeto não usamos, mas é o lugar para colocar funções adicionais */
+    </pre>
+    
+    <h3>Explicação do Processo:</h3>
+    <div class="explicacao">
+        <strong>1. Leitura Sequencial:</strong> O Flex lê o arquivo caractere por caractere, tentando casar com os padrões definidos.
+    </div>
+    
+    <div class="explicacao">
+        <strong>2. Prioridade:</strong> Se múltiplos padrões casam, Flex escolhe o mais longo. Palavras-chave devem vir antes de identificadores genéricos.
+    </div>
+    
+    <div class="explicacao">
+        <strong>3. Ação Executada:</strong> Quando um padrão casa, o código C entre chaves é executado.
+    </div>
+    
+    <div class="explicacao">
+        <strong>4. Variáveis Especiais:</strong><br>
+        • <code>yytext</code> = string com o texto reconhecido<br>
+        • <code>yylval</code> = union para armazenar valor do token<br>
+        • <code>yylex()</code> = função gerada que faz todo o trabalho
+    </div>
+    
+    <h3>Exemplo Prático - Entrada vs Saída:</h3>
+    <div class="exemplo">
+        <strong>Código C- de entrada:</strong><br>
+        <code>int x = 5;</code><br><br>
+        
+        <strong>Tokens gerados (sequência):</strong>
+        <pre>
+Token 1: INT      (tipo: palavra-chave)
+Token 2: ID       (valor: "x")
+Token 3: ATRIBUICAO
+Token 4: NUM      (valor: 5)
+Token 5: PONTOVIRGULA
+        </pre>
+        
+        <strong>Visualização visual:</strong>
+        <pre>
+int     x     =     5     ;
+│       │     │     │     │
+└─INT   │     │     │     │
+        └─ID  │     │     │
+              └─ATR │     │
+                    └─NUM │
+                          └─PV
+        </pre>
+    </div>
+    
+    <h3>Como Compilar:</h3>
+    <pre>
+# Comando Flex para gerar o analisador léxico
+flex cminus.l
+
+# Resultado: arquivo lex.yy.c (código C gerado automaticamente)
+# Este arquivo contém a função yylex() que faz todo o reconhecimento
+    </pre>
+</div>
+
+<div class="secao" id="tabela-simbolos">
+    <h2>3. Tabela de Símbolos (simbolos.h/c)</h2>
+    
+    <div class="arquivo">Arquivo: cminus.y</div>
+
+    <div class="arquivo">Arquivos: simbolos.h, simbolos.c</div>
+    
+    <h3>O que faz?</h3>
+    <p>Armazena informações sobre todos os <strong>identificadores</strong> (variáveis e funções) do programa. É como um "dicionário" que registra cada nome e seus atributos.</p>
+    
+    <div class="teoria">
+        <strong>Teoria da Tabela de Símbolos:</strong><br><br>
+        A tabela de símbolos é uma <strong>estrutura de dados fundamental</strong> em compiladores. Durante a compilação, o compilador precisa:
+        <br><br>
+        1. <strong>Registrar</strong> quando uma variável é declarada<br>
+        2. <strong>Recuperar</strong> informações quando a variável é usada<br>
+        3. <strong>Validar</strong> se a variável foi declarada antes de usar<br>
+        4. <strong>Rastrear</strong> o escopo (global vs local)<br>
+        <br>
+        A implementação mais comum é uma <strong>lista ligada</strong> ou <strong>tabela hash</strong>. Nosso projeto usa lista ligada, onde cada novo símbolo é inserido no início.
+    </div>
+    
+    <h3>Estrutura de Dados (simbolos.h):</h3>
+    <pre>
+typedef struct Simbolo {
+    char nome[50];              /* Nome da variável ou função */
+    char tipo[10];              /* Tipo: "int", "void", "int[]" etc */
+    char escopo[50];            /* "global" ou nome da função onde está */
+    int linha;                  /* Linha onde foi declarado (para erros) */
+    int ehFuncao;               /* 1 = é função, 0 = é variável */
+    int numParametros;          /* Número de parâmetros (se for função) */
+    struct Simbolo *prox;       /* Ponteiro para próximo símbolo (lista ligada) */
+} Simbolo;
+
+/* Variável global que aponta para o início da tabela */
+static Simbolo *tabela = NULL;
+    </pre>
+    
+    <h3>Explicação de Cada Campo:</h3>
+    <table>
+        <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Descrição</th>
+            <th>Exemplo</th>
+        </tr>
+        <tr>
+            <td><code>nome</code></td>
+            <td>char[50]</td>
+            <td>Nome do identificador</td>
+            <td>"x", "main", "input"</td>
+        </tr>
+        <tr>
+            <td><code>tipo</code></td>
+            <td>char[10]</td>
+            <td>Tipo de dado</td>
+            <td>"int", "void", "int[]"</td>
+        </tr>
+        <tr>
+            <td><code>escopo</code></td>
+            <td>char[50]</td>
+            <td>Onde está visível</td>
+            <td>"global" ou "main" (função)</td>
+        </tr>
+        <tr>
+            <td><code>linha</code></td>
+            <td>int</td>
+            <td>Linha de declaração</td>
+            <td>1, 5, 10</td>
+        </tr>
+        <tr>
+            <td><code>ehFuncao</code></td>
+            <td>int (bool)</td>
+            <td>É função?</td>
+            <td>1 = sim, 0 = não</td>
+        </tr>
+        <tr>
+            <td><code>numParametros</code></td>
+            <td>int</td>
+            <td>Quantidade de parâmetros</td>
+            <td>0, 1, 2...</td>
+        </tr>
+        <tr>
+            <td><code>prox</code></td>
+            <td>Simbolo*</td>
+            <td>Próximo nó da lista</td>
+            <td>Endereço de memória</td>
+        </tr>
+    </table>
+    
+    <h3>Funções Principais (simbolos.c):</h3>
+    
+    <h4>1. inserirSimbolo() - Adicionar novo símbolo</h4>
+    <pre>
+int inserirSimbolo(const char *nome, const char *tipo, 
+                   const char *escopo, int linha, 
+                   int ehFuncao, int numParams) {
+    
+    /* PASSO 1: Verifica se já existe no mesmo escopo
+       Impede redeclaração de variáveis no mesmo escopo */
+    if (buscarSimboloNoEscopo(nome, escopo) != NULL) {
+        return 0;  /* Retorna 0 = falha, símbolo já existe */
+    }
+    
+    /* PASSO 2: Aloca memória para novo símbolo
+       malloc retorna um ponteiro para um bloco de memória */
+    Simbolo *novo = malloc(sizeof(Simbolo));
+    
+    /* PASSO 3: Copia dados para o novo símbolo
+       strcpy = copia string de forma segura */
+    strcpy(novo->nome, nome);
+    strcpy(novo->tipo, tipo);
+    strcpy(novo->escopo, escopo);
+    novo->linha = linha;
+    novo->ehFuncao = ehFuncao;
+    novo->numParametros = numParams;
+    
+    /* PASSO 4: Insere no INÍCIO da lista ligada
+       Inserir no início é mais rápido que no final
+       O novo símbolo aponta para o anterior, e ele vira o primeiro */
+    novo->prox = tabela;   /* novo.prox aponta para o antigo primeiro */
+    tabela = novo;          /* tabela agora aponta para o novo primeiro */
+    
+    return 1;  /* Retorna 1 = sucesso */
+}
+    </pre>
+    
+    <h4>2. buscarSimbolo() - Procurar por nome</h4>
+    <pre>
+Simbolo* buscarSimbolo(const char *nome, const char *escopo) {
+    
+    /* PASSO 1: Procura no escopo local (mais específico) */
+    Simbolo *s = buscarSimboloNoEscopo(nome, escopo);
+    if (s != NULL) return s;  /* Encontrou! Retorna */
+    
+    /* PASSO 2: Se não achou no local, procura no global
+       Variáveis globais são acessíveis de qualquer escopo */
+    if (strcmp(escopo, "global") != 0) {  /* Se não estamos já no global */
+        s = buscarSimboloNoEscopo(nome, "global");
+    }
+    
+    return s;  /* Retorna o símbolo ou NULL se não existe */
+}
+
+/* Função auxiliar que procura em um escopo específico */
+static Simbolo* buscarSimboloNoEscopo(const char *nome, 
+                                      const char *escopo) {
+    
+    /* Percorre a lista ligada do início até o fim */
+    Simbolo *atual = tabela;
+    
+    while (atual != NULL) {
+        /* Verifica se nome E escopo combinam
+           strcmp retorna 0 se strings são iguais */
+        if (strcmp(atual->nome, nome) == 0 && 
+            strcmp(atual->escopo, escopo) == 0) {
+            
+            return atual;  /* Encontrou! */
+        }
+        atual = atual->prox;  /* Move para próximo símbolo */
+    }
+    
+    return NULL;  /* Não encontrou */
+}
+    </pre>
+    
+    <h4>3. imprimirTabelaSimbolos() - Exibir tabela formatada</h4>
+    <pre>
+void imprimirTabelaSimbolos(void) {
+    printf("\n");
+    printf("╔════════════════════════════════════════════════════════════════╗\n");
+    printf("║             TABELA DE SIMBOLOS                                ║\n");
+    printf("╚════════════════════════════════════════════════════════════════╝\n");
+    
+    /* Imprime cabeçalho da tabela com formatação */
+    printf("%-20s %-10s %-15s %-8s %-10s\n", 
+           "Nome", "Tipo", "Escopo", "Linha", "Categoria");
+    printf("────────────────────────────────────────────────────────────────\n");
+    
+    /* Percorre lista e imprime cada símbolo */
+    Simbolo *atual = tabela;
+    while (atual != NULL) {
+        printf("%-20s %-10s %-15s %-8d %-10s\n",
+               atual->nome,
+               atual->tipo,
+               atual->escopo,
+               atual->linha,
+               atual->ehFuncao ? "funcao" : "variavel");
+        
+        atual = atual->prox;  /* Próximo símbolo */
+    }
+    printf("\n");
+}
+    </pre>
+    
+    <h3>Exemplo de Uso Prático:</h3>
+    <div class="exemplo">
+        <strong>Código C-:</strong>
+        <pre>
+int x;              /* Linha 1 */
+int f(int y) {      /* Linha 3 */
+    int z;          /* Linha 4 */
+    x = y + z;      /* Linha 5 */
+    return x;
+}
+void main(void) {   /* Linha 8 */
+    f(5);
+}
+        </pre>
+        
+        <strong>Tabela de Símbolos Resultante:</strong>
+        <table>
+            <tr>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Escopo</th>
+                <th>Linha</th>
+                <th>Categoria</th>
+            </tr>
+            <tr>
+                <td>x</td>
+                <td>int</td>
+                <td>global</td>
+                <td>1</td>
+                <td>variavel</td>
+            </tr>
+            <tr>
+                <td>f</td>
+                <td>int</td>
+                <td>global</td>
+                <td>3</td>
+                <td>funcao</td>
+            </tr>
+            <tr>
+                <td>y</td>
+                <td>int</td>
+                <td>f</td>
+                <td>3</td>
+                <td>variavel</td>
+            </tr>
+            <tr>
+                <td>z</td>
+                <td>int</td>
+                <td>f</td>
+                <td>4</td>
+                <td>variavel</td>
+            </tr>
+            <tr>
+                <td>main</td>
+                <td>void</td>
+                <td>global</td>
+                <td>8</td>
+                <td>funcao</td>
+            </tr>
+        </table>
+        
+        <strong>Como funciona a busca:</strong><br>
+        Quando encontramos <code>x = y + z;</code> na linha 5:
+        <ul>
+            <li>Buscar <code>x</code>: primeiro no escopo "f", não encontra → busca em "global", encontra ✓</li>
+            <li>Buscar <code>y</code>: no escopo "f", encontra ✓</li>
+            <li>Buscar <code>z</code>: no escopo "f", encontra ✓</li>
+        </ul>
+    </div>
+    
+    <h3>Visualização da Lista Ligada:</h3>
+    <pre>
+tabela ─→ [main|void|g|8] ──→ [z|int|f|4] ──→ [y|int|f|3] ──→ [f|int|g|3] ──→ [x|int|g|1] ──→ NULL
+         (último inserido)                                                     (primeiro inserido)
+         
+Note: A ordem é inversa da declaração porque inserimos sempre no início!
+    </pre>
+</div>
+    
+    <div class="exemplo">
+        <strong>Exemplo:</strong><br>
+        <strong>Código:</strong> <code>x = 5 + 3;</code><br><br>
+        
+        <strong>Árvore gerada:</strong>
+        <pre>
+- ATRIB [linha 1]
+  - ID (x) [linha 1]
+  - SOMA (+) [linha 1]
+    - NUM (5) [linha 1]
+    - NUM (3) [linha 1]
+        </pre>
+    </div>
+    
+    <h3>Estrutura do arquivo cminus.y:</h3>
+    <pre>
+%{
+/* SEÇÃO 1: Código C */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include "arvore.h"
+#include "simbolos.h"
+#include "semantico.h"
+#include "intermediario.h"
+
+extern int yylex();
+extern int linha;
+NoArvore* raiz = NULL;
+
+void yyerror(char *s) {
+    fprintf(stderr, "ERRO SINTATICO: %s LINHA: %d\n", s, linha);
+}
+%}
+
+/* SEÇÃO 2: Definição de tokens e tipos */
+%union {
+    void* no;
+    char* str;
+    int num;
+}
+
+%token &lt;str&gt; ID
+%token &lt;num&gt; NUM
+%token IF ELSE WHILE RETURN INT VOID
+%token MAIS MENOS VEZES DIVIDIDO
+%token ATRIBUICAO PONTOVIRGULA
+
+%type &lt;no&gt; programa declaracao comando expressao
+
+%%
+/* SEÇÃO 3: Regras da gramática */
+
+programa:
+    declaracao_lista
+    { raiz = $1; }
+    ;
+
+declaracao:
+    tipo ID PONTOVIRGULA
+    { $$ = criarNo("VAR", $2, linha);
+      adicionarFilho($$, $1); }
+    ;
+
+comando:
+    ID ATRIBUICAO expressao PONTOVIRGULA
+    { $$ = criarNo("ATRIB", NULL, linha);
+      NoArvore* id = criarNo("ID", $1, linha);
+      adicionarFilho($$, id);
+      adicionarFilho($$, $3); }
+    ;
+
+expressao:
+    expressao MAIS expressao
+    { $$ = criarNo("SOMA", "+", linha);
+      adicionarFilho($$, $1);
+      adicionarFilho($$, $3); }
+    | NUM
+    { char numstr[16]; 
+      sprintf(numstr, "%d", $1);
+      $$ = criarNo("NUM", numstr, linha); }
+    | ID
+    { $$ = criarNo("ID", $1, linha); }
+    ;
+
+%%
+
+int main(int argc, char *argv[]) {
+    if (argc == 2) {
+        FILE *fp = fopen(argv[1], "r");
+        if (!fp) {
+            printf("Erro ao abrir arquivo\n");
+            return 1;
+        }
+        extern FILE *yyin;
+        yyin = fp;
+        
+        yyparse();
+        
+        analisarSemantica(raiz);
+        gerarCodigoIntermediario(raiz);
+        
+        imprimirArvore(raiz, 0);
+        imprimirTabelaSimbolos();
+        imprimirCodigoIntermediario();
+        
+        fclose(fp);
+    }
+    return 0;
+}
+    </pre>
+    
+    <h3>Como usar:</h3>
+    <pre>
+# Gerar o analisador sintático
+bison -d cminus.y
+
+# Isso cria:
+# - cminus.tab.c (código do parser)
+# - cminus.tab.h (definições de tokens)
+    </pre>
+</div>
+
+<div class="secao">
+    <h2>5. Árvore Sintática (arvore.h/c)</h2>
+    
+    <div class="arquivo">Arquivos: arvore.h, arvore.c</div>
+    
+    <h3>O que faz?</h3>
+    <p>Representa a estrutura hierárquica do programa em forma de árvore.</p>
+    
+    <h3>Estrutura do Nó (arvore.h):</h3>
+    <pre>
+typedef struct noArvore {
+    char tipo[20];              // Ex: "ATRIB", "SOMA", "ID"
+    char valor[50];             // Ex: "x", "5", "+"
+    int linha;                  // Número da linha no código
+    int nFilhos;                // Quantidade de filhos
+    struct noArvore** filhos;   // Array de ponteiros para filhos
+} NoArvore;
+    </pre>
+    
+    <h3>Funções principais (arvore.c):</h3>
+    <pre>
+// Criar um novo nó
+NoArvore* criarNo(const char* tipo, const char* valor, int linha) {
+    NoArvore* no = malloc(sizeof(NoArvore));
+    strcpy(no->tipo, tipo);
+    if (valor) strcpy(no->valor, valor);
+    no->linha = linha;
+    no->nFilhos = 0;
+    no->filhos = NULL;
+    return no;
+}
+
+// Adicionar filho a um nó
+void adicionarFilho(NoArvore* pai, NoArvore* filho) {
+    pai->nFilhos++;
+    pai->filhos = realloc(pai->filhos, 
+                          sizeof(NoArvore*) * pai->nFilhos);
+    pai->filhos[pai->nFilhos - 1] = filho;
+}
+
+// Imprimir a árvore com indentação
+void imprimirArvore(NoArvore* no, int nivel) {
+    if (!no) return;
+    
+    for (int i = 0; i < nivel; i++) printf("  ");
+    printf("- %s", no->tipo);
+    if (no->valor[0]) printf(" (%s)", no->valor);
+    printf(" [linha %d]\n", no->linha);
+    
+    for (int i = 0; i < no->nFilhos; i++) {
+        imprimirArvore(no->filhos[i], nivel + 1);
+    }
+}
+    </pre>
+    
+    <div class="exemplo">
+        <strong>Exemplo de saída:</strong>
+        <pre>
+- DECL_LIST [linha 3]
+  - DECL [linha 1]
+    - VAR (x) [linha 1]
+      - TIPO (int) [linha 1]
+  - DECL [linha 3]
+    - FUN_DEF (main) [linha 3]
+      - TIPO (void) [linha 3]
+      - PARAMS (void) [linha 3]
+      - CORPO [linha 5]
+        - CMD [linha 4]
+          - ATRIB [linha 4]
+            - ID (x) [linha 4]
+            - NUM (5) [linha 4]
+        </pre>
+    </div>
+</div>
+
+<div class="secao">
+    <h2>6. Tabela de Símbolos (simbolos.h/c)</h2>
+    
+    <div class="arquivo">Arquivos: simbolos.h, simbolos.c</div>
+    
+    <h3>O que faz?</h3>
+    <p>Armazena informações sobre todos os <strong>identificadores</strong> (variáveis e funções) do programa.</p>
+    
+    <h3>Campos da tabela:</h3>
+    <ul>
+        <li><strong>Nome:</strong> nome da variável ou função</li>
+        <li><strong>Tipo:</strong> int, void, int[] (array)</li>
+        <li><strong>Escopo:</strong> "global" ou nome da função</li>
+        <li><strong>Linha:</strong> linha onde foi declarado</li>
+        <li><strong>Categoria:</strong> "variavel" ou "funcao"</li>
+    </ul>
+    
+    <h3>Estrutura (simbolos.h):</h3>
+    <pre>
+typedef struct Simbolo {
+    char nome[50];              // Nome do identificador
+    char tipo[10];              // Tipo: "int", "void", "int[]"
+    char escopo[50];            // Escopo: "global" ou nome da função
+    int linha;                  // Linha onde foi declarado
+    int ehFuncao;               // 1 = função, 0 = variável
+    int numParametros;          // Número de parâmetros (para funções)
+    struct Simbolo *prox;       // Próximo símbolo (lista ligada)
+} Simbolo;
+    </pre>
+    
+    <h3>Funções principais (simbolos.c):</h3>
+    <pre>
+// Inserir símbolo na tabela
+int inserirSimbolo(const char *nome, const char *tipo, 
+                   const char *escopo, int linha, 
+                   int ehFuncao, int numParams) {
+    // Verifica se já existe
+    if (buscarSimboloNoEscopo(nome, escopo) != NULL) {
+        return 0; // Já existe
+    }
+    
+    // Cria novo símbolo
+    Simbolo *novo = malloc(sizeof(Simbolo));
+    strcpy(novo->nome, nome);
+    strcpy(novo->tipo, tipo);
+    strcpy(novo->escopo, escopo);
+    novo->linha = linha;
+    novo->ehFuncao = ehFuncao;
+    novo->numParametros = numParams;
+    
+    // Insere no início da lista
+    novo->prox = tabela;
+    tabela = novo;
+    
+    return 1; // Sucesso
+}
+
+// Buscar símbolo (local primeiro, depois global)
+Simbolo* buscarSimbolo(const char *nome, const char *escopo) {
+    // Busca no escopo local
+    Simbolo *s = buscarSimboloNoEscopo(nome, escopo);
+    if (s) return s;
+    
+    // Se não achou, busca no global
+    if (strcmp(escopo, "global") != 0) {
+        s = buscarSimboloNoEscopo(nome, "global");
+    }
+    
+    return s;
+}
+
+// Imprimir tabela formatada
+void imprimirTabelaSimbolos(void) {
+    printf("\n=== TABELA DE SIMBOLOS ===\n");
+    printf("%-20s %-10s %-15s %-8s %-10s\n", 
+           "Nome", "Tipo", "Escopo", "Linha", "Categoria");
+    printf("--------------------------------------------------------\n");
+    
+    Simbolo *atual = tabela;
+    while (atual != NULL) {
+        printf("%-20s %-10s %-15s %-8d %-10s\n",
+               atual->nome, atual->tipo, atual->escopo,
+               atual->linha, 
+               atual->ehFuncao ? "funcao" : "variavel");
+        atual = atual->prox;
+    }
+}
+    </pre>
+    
+    <div class="exemplo">
+        <strong>Exemplo de saída:</strong>
+        <table>
+            <tr>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Escopo</th>
+                <th>Linha</th>
+                <th>Categoria</th>
+            </tr>
+            <tr>
+                <td>x</td>
+                <td>int</td>
+                <td>global</td>
+                <td>1</td>
+                <td>variavel</td>
+            </tr>
+            <tr>
+                <td>main</td>
+                <td>void</td>
+                <td>global</td>
+                <td>3</td>
+                <td>funcao</td>
+            </tr>
+            <tr>
+                <td>a</td>
+                <td>int</td>
+                <td>main</td>
+                <td>4</td>
+                <td>variavel</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="secao">
+    <h2>7. Análise Semântica (semantico.h/c)</h2>
+    
+    <div class="arquivo">Arquivos: semantico.h, semantico.c</div>
+    
+    <h3>O que faz?</h3>
+    <p>Verifica <strong>regras semânticas</strong> da linguagem:</p>
+    <ul>
+        <li>Variáveis devem ser declaradas antes do uso</li>
+        <li>Tipos devem ser compatíveis em atribuições</li>
+        <li>Função <code>main</code> é obrigatória</li>
+        <li>Não pode haver redeclaração de variáveis no mesmo escopo</li>
+    </ul>
+    
+    <h3>Função principal (semantico.c):</h3>
+    <pre>
+int analisarSemantica(NoArvore *raiz) {
+    errosSemanticos = 0;
+    
+    // Inicializa funções predefinidas
+    inserirSimbolo("input", "int", "global", 0, 1, 0);
+    inserirSimbolo("output", "void", "global", 0, 1, 1);
+    
+    // Percorre a árvore
+    if (raiz != NULL) {
+        analisarNo(raiz);
+    }
+    
+    // Verifica se main() existe
+    if (buscarSimbolo("main", "global") == NULL) {
+        printf("ERRO SEMANTICO: funcao 'main' nao declarada\n");
+        errosSemanticos++;
+    }
+    
+    return errosSemanticos;
+}
+
+static void analisarNo(NoArvore *no) {
+    if (no == NULL) return;
+    
+    // DECLARAÇÃO DE VARIÁVEL
+    if (strcmp(no->tipo, "VAR") == 0) {
+        // Extrai tipo e nome
+        char tipo[20];
+        strcpy(tipo, no->filhos[0]->valor); // "int" ou "void"
+        char *nome = no->valor;
+        
+        // Insere na tabela
+        if (!inserirSimbolo(nome, tipo, escopoAtual, 
+                            no->linha, 0, 0)) {
+            printf("ERRO SEMANTICO: variavel '%s' ja declarada\n", 
+                   nome);
+            errosSemanticos++;
+        }
+    }
+    
+    // USO DE VARIÁVEL
+    else if (strcmp(no->tipo, "ID") == 0) {
+        Simbolo *s = buscarSimbolo(no->valor, escopoAtual);
+        if (s == NULL) {
+            printf("ERRO SEMANTICO: variavel '%s' nao declarada LINHA: %d\n",
+                   no->valor, no->linha);
+            errosSemanticos++;
+        }
+    }
+    
+    // Percorre filhos
+    for (int i = 0; i < no->nFilhos; i++) {
+        analisarNo(no->filhos[i]);
+    }
+}
+    </pre>
+    
+    <div class="exemplo">
+        <strong>Exemplos de erros detectados:</strong>
+        <pre>
+ERRO SEMANTICO: variavel 'y' nao declarada LINHA: 10
+ERRO SEMANTICO: variavel 'x' ja declarada neste escopo LINHA: 12
+ERRO SEMANTICO: funcao 'main' nao declarada LINHA: 0
+ERRO SEMANTICO: atribuicao de tipo incompatível ('int' = 'void') LINHA: 15
+        </pre>
+    </div>
+</div>
+
+<div class="secao">
+    <h2>8. Código Intermediário (intermediario.h/c)</h2>
+    
+    <div class="arquivo">Arquivos: intermediario.h, intermediario.c</div>
+    
+    <h3>O que faz?</h3>
+    <p>Converte a árvore sintática em <strong>código de 3 endereços</strong> (três-address code), uma representação intermediária mais simples que facilita otimizações e a geração de código final.</p>
+    
+    <h3>Estrutura (intermediario.h):</h3>
+    <pre>
+typedef struct {
+    int numero;             // Número da instrução
+    char operador[10];      // Operador: +, -, *, /, =, etc.
+    char operando1[50];     // Primeiro operando
+    char operando2[50];     // Segundo operando (pode estar vazio)
+    char resultado[50];     // Resultado (variável temporária ou destino)
+} Instrucao3Endereco;
+    </pre>
+    
+    <div class="exemplo">
+        <strong>Exemplo de conversão:</strong><br><br>
+        
+        <strong>Código C-:</strong><br>
+        <code>x = y + z * 2;</code><br><br>
+        
+        <strong>Código intermediário gerado:</strong>
+        <table>
+            <tr>
+                <th>Num</th>
+                <th>Op</th>
+                <th>Operando1</th>
+                <th>Operando2</th>
+                <th>Resultado</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>*</td>
+                <td>z</td>
+                <td>2</td>
+                <td>t0</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>+</td>
+                <td>y</td>
+                <td>t0</td>
+                <td>t1</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>=</td>
+                <td>t1</td>
+                <td></td>
+                <td>x</td>
+            </tr>
+        </table>
+    </div>
+    
+    <h3>Função principal (intermediario.c):</h3>
+    <pre>
+int gerarCodigoIntermediario(NoArvore *raiz) {
+    totalInstrucoes = 0;
+    contadorTemp = 0;
+    
+    instrucoes = malloc(sizeof(Instrucao3Endereco) * 100);
+    
+    char resultado[50];
+    analisarNoIntermediario(raiz, resultado);
+    
+    return totalInstrucoes;
+}
+
+static void analisarNoIntermediario(NoArvore *no, char *resultado) {
+    if (no == NULL) return;
+    
+    // OPERAÇÕES BINÁRIAS
+    if (strcmp(no->tipo, "SOMA") == 0) {
+        char temp1[50], temp2[50];
+        
+        // Gera código para operando 1
+        analisarNoIntermediario(no->filhos[0], temp1);
+        
+        // Gera código para operando 2
+        analisarNoIntermediario(no->filhos[1], temp2);
+        
+        // Gera instrução de soma
+        char *temp = gerarTemp(); // ex: "t0"
+        gerarInstrucao("+", temp1, temp2, temp);
+        strcpy(resultado, temp);
+    }
+    
+    // ATRIBUIÇÃO
+    else if (strcmp(no->tipo, "ATRIB") == 0) {
+        char tempdireito[50];
+        
+        // Processa lado direito
+        analisarNoIntermediario(no->filhos[1], tempdireito);
+        
+        // Atribui ao lado esquerdo
+        char *nome = no->filhos[0]->valor;
+        gerarInstrucao("=", tempdireito, "", nome);
+    }
+    
+    // NÚMERO ou IDENTIFICADOR
+    else if (strcmp(no->tipo, "NUM") == 0 || 
+             strcmp(no->tipo, "ID") == 0) {
+        strcpy(resultado, no->valor);
+    }
+}
+    </pre>
+</div>
+
+<div class="secao">
+    <h2>9. Compilando e Executando</h2>
+    
+    <h3>Passo 1: Gerar os arquivos com Flex e Bison</h3>
+    <pre>
+flex cminus.l          # Gera lex.yy.c
+bison -d cminus.y      # Gera cminus.tab.c e cminus.tab.h
+    </pre>
+    
+    <h3>Passo 2: Compilar tudo com GCC</h3>
+    <pre>
+gcc lex.yy.c cminus.tab.c arvore.c simbolos.c semantico.c intermediario.c -o scanner.exe
+    </pre>
+    
+    <h3>Passo 3: Executar com arquivo de teste</h3>
+    <pre>
+./scanner.exe teste1_basico.cm
+    </pre>
+    
+    <h3>Saída esperada:</h3>
+    <pre>
+=== COMPILADOR C- ===
+
+Analisando arquivo: teste1_basico.cm
+
+--- FASE 1: ANALISE SINTATICA ---
+Analise sintatica concluida com sucesso!
+
+--- FASE 2: ANALISE SEMANTICA ---
+Analise semantica concluida sem erros!
+
+--- ARVORE SINTATICA ---
+- DECL_LIST [linha 5]
+  - DECL [linha 1]
+    - VAR (x) [linha 1]
+      - TIPO (int) [linha 1]
+  - DECL [linha 5]
+    - FUN_DEF (main) [linha 5]
+      ...
+
+--- FASE 3: GERACAO DE CODIGO INTERMEDIARIO ---
+Codigo intermediario gerado: 2 instrucoes
+
+=== CODIGO INTERMEDIARIO (3-ADDRESS CODE) ===
+Num      Op         Operando1       Operando2       Resultado
+1        +          y               1               t0
+2        =          t0                              x
+
+=== TABELA DE SIMBOLOS ===
+Nome                 Tipo       Escopo          Linha    Categoria
+x                    int        global          1        variavel
+main                 void       global          5        funcao
+    </pre>
+</div>
+
+<div class="secao">
+    <h2>10. Arquivos de Teste</h2>
+    
+    <h3>teste1_basico.cm - Teste básico</h3>
+    <pre>
+int x;
+
+void main(void) {
+    x = 5;
+    return 0;
+}
+    </pre>
+    
+    <h3>teste3_erros_semanticos.cm - Teste de erros semânticos</h3>
+    <pre>
+int x;
+
+void main(void) {
+    int a;
+    a = 5;
+    x = y + 1;      /* Erro: y não declarada */
+    z = a;          /* Erro: z não declarada */
+    return 0;
+}
+    </pre>
+    
+    <h3>teste4_sem_main.cm - Teste sem função main</h3>
+    <pre>
+int x;
+
+int outra(void) {
+    x = 5;
+    return x;
+}
+/* Erro: falta a função main */
+    </pre>
+    
+    <h3>teste6_tipos.cm - Teste de tipos</h3>
+    <pre>
+int x;
+int y;
+
+int f(void) { 
+    return 1;
+}
+
+void g(void) { 
+}
+
+void main(void) {
+    x = y + 1;
+    x = y + z;      /* Erro: z não declarada */
+    return 0;
+}
+    </pre>
+</div>
+
+<div class="secao">
+    <h2>11. Comandos Resumidos</h2>
+    
+    <table>
+        <tr>
+            <th>Comando</th>
+            <th>Descrição</th>
+        </tr>
+        <tr>
+            <td><code>flex cminus.l</code></td>
+            <td>Gera o analisador léxico (lex.yy.c)</td>
+        </tr>
+        <tr>
+            <td><code>bison -d cminus.y</code></td>
+            <td>Gera o analisador sintático (cminus.tab.c/h)</td>
+        </tr>
+        <tr>
+            <td><code>gcc lex.yy.c cminus.tab.c arvore.c simbolos.c semantico.c intermediario.c -o scanner.exe</code></td>
+            <td>Compila todos os arquivos</td>
+        </tr>
+        <tr>
+            <td><code>./scanner.exe arquivo.cm</code></td>
+            <td>Executa o compilador</td>
+        </tr>
+        <tr>
+            <td><code>git add .</code></td>
+            <td>Adiciona arquivos ao Git</td>
+        </tr>
+        <tr>
+            <td><code>git commit -m "mensagem"</code></td>
+            <td>Faz commit das alterações</td>
+        </tr>
+        <tr>
+            <td><code>git push origin main</code></td>
+            <td>Envia para o GitHub</td>
+        </tr>
+    </table>
+</div>
+
+<div class="secao">
+    <h2>12. Glossário de Termos</h2>
+    
+    <ul>
+        <li><strong>Token:</strong> Unidade léxica básica (palavra-chave, identificador, operador)</li>
+        <li><strong>Gramática:</strong> Conjunto de regras que definem a sintaxe da linguagem</li>
+        <li><strong>Árvore Sintática (AST):</strong> Representação hierárquica da estrutura do programa</li>
+        <li><strong>Escopo:</strong> Região do código onde uma variável é visível</li>
+        <li><strong>Tipo:</strong> Classificação de dados (int, void, array)</li>
+        <li><strong>Código de 3 endereços:</strong> Forma intermediária onde cada instrução tem no máximo 3 operandos</li>
+        <li><strong>Variável temporária:</strong> Variável auxiliar criada durante a geração de código (t0, t1, etc.)</li>
+        <li><strong>Análise semântica:</strong> Verificação de significado e regras da linguagem</li>
+    </ul>
+</div>
+
+<div class="secao">
+    <h2>13. Resumo das Fases</h2>
+    
+    <table>
+        <tr>
+            <th>Fase</th>
+            <th>Entrada</th>
+            <th>Saída</th>
+            <th>Arquivo</th>
+        </tr>
+        <tr>
+            <td>1. Análise Léxica</td>
+            <td>Código-fonte (.cm)</td>
+            <td>Tokens</td>
+            <td>cminus.l</td>
+        </tr>
+        <tr>
+            <td>2. Análise Sintática</td>
+            <td>Tokens</td>
+            <td>Árvore Sintática</td>
+            <td>cminus.y</td>
+        </tr>
+        <tr>
+            <td>3. Análise Semântica</td>
+            <td>Árvore Sintática</td>
+            <td>Tabela de Símbolos + Erros</td>
+            <td>semantico.c</td>
+        </tr>
+        <tr>
+            <td>4. Código Intermediário</td>
+            <td>Árvore Sintática</td>
+            <td>Instruções de 3 endereços</td>
+            <td>intermediario.c</td>
+        </tr>
+    </table>
+</div>
+
+<p style="text-align: center; margin-top: 40px; color: #7f8c8d;">
+    <strong>Compilador C- - Projeto Final de Compiladores</strong><br>
+    Desenvolvido com Flex, Bison e C
+</p>
+
+</body>
+</html>

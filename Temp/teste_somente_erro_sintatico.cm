@@ -1,0 +1,16 @@
+/* Arquivo com APENAS ERRO SINTATICO
+   Linha 10: a = 5 FALTA o ponto e vírgula aqui
+   Linha 11: return 0; - Parser detecta erro aqui (token 'return' inesperado)
+   
+   O erro é reportado na linha 11 porque é onde o parser encontra
+   um token inesperado (return), não onde deveria estar o ; (linha 10)
+*/
+
+int x;
+
+void main(void) {
+    int a;
+    
+    a = 5
+    return 0;
+}

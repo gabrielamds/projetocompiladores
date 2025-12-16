@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 23 "cminus.y"
+#line 1 "cminus.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,6 +81,12 @@
 extern int yylex();
 extern int linha;
 
+/* Funcoes externas da tabela de tokens (do scanner) */
+extern void imprimirTabelaTokens(void);
+extern void resetarTabelaTokens(void);
+extern void imprimirErrosLexicos(void);
+extern void resetarErrosLexicos(void);
+
 /* Raiz da arvore sintatica - sera preenchida durante o parsing */
 NoArvore* raiz = NULL;
 
@@ -90,10 +96,6 @@ int yydebug;
 /* Variavel externa do Flex com o token atual */
 extern char *yytext;
 
-/*
- * yyerror - Funcao chamada pelo Bison quando encontra erro sintatico
- * Imprime mensagem no formato especificado pela disciplina.
- */
 void yyerror(char *s) {
     if (yytext && yytext[0] != '\0') {
         fprintf(stderr, "ERRO SINTATICO: '%s' (esperado: %s) LINHA: %d\n", yytext, s, linha);
@@ -102,7 +104,7 @@ void yyerror(char *s) {
     }
 }
 
-#line 106 "cminus.tab.c"
+#line 108 "cminus.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -574,13 +576,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   107,   107,   112,   117,   122,   126,   134,   138,   149,
-     150,   155,   165,   166,   174,   179,   184,   188,   196,   201,
-     209,   214,   215,   222,   226,   230,   234,   238,   245,   250,
-     254,   258,   265,   269,   276,   282,   291,   300,   303,   311,
-     316,   321,   327,   332,   333,   334,   335,   336,   337,   342,
-     347,   352,   357,   362,   367,   372,   373,   374,   379,   382,
-     390,   394,   402,   405
+       0,    67,    67,    72,    77,    82,    86,    94,    98,   109,
+     110,   115,   125,   126,   134,   139,   144,   148,   156,   161,
+     169,   174,   175,   182,   186,   190,   194,   198,   205,   210,
+     214,   218,   225,   229,   236,   242,   251,   260,   263,   271,
+     276,   281,   287,   292,   293,   294,   295,   296,   297,   302,
+     307,   312,   317,   322,   327,   332,   333,   334,   339,   342,
+     350,   354,   362,   365
 };
 #endif
 
@@ -1225,56 +1227,56 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* programa: declaracao_lista  */
-#line 107 "cminus.y"
+#line 67 "cminus.y"
                        { raiz = (yyvsp[0].no); }
-#line 1231 "cminus.tab.c"
+#line 1233 "cminus.tab.c"
     break;
 
   case 3: /* declaracao_lista: declaracao_lista declaracao  */
-#line 112 "cminus.y"
+#line 72 "cminus.y"
                                 {
         (yyval.no) = criarNo("DECL_LIST", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1241 "cminus.tab.c"
+#line 1243 "cminus.tab.c"
     break;
 
   case 4: /* declaracao_lista: declaracao  */
-#line 117 "cminus.y"
+#line 77 "cminus.y"
                { (yyval.no) = (yyvsp[0].no); }
-#line 1247 "cminus.tab.c"
+#line 1249 "cminus.tab.c"
     break;
 
   case 5: /* declaracao: var_declaracao  */
-#line 122 "cminus.y"
+#line 82 "cminus.y"
                    {
         (yyval.no) = criarNo("DECL", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1256 "cminus.tab.c"
+#line 1258 "cminus.tab.c"
     break;
 
   case 6: /* declaracao: fun_declaracao  */
-#line 126 "cminus.y"
+#line 86 "cminus.y"
                    {
         (yyval.no) = criarNo("DECL", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1265 "cminus.tab.c"
+#line 1267 "cminus.tab.c"
     break;
 
   case 7: /* var_declaracao: tipo_especificador ID PONTOVIRGULA  */
-#line 134 "cminus.y"
+#line 94 "cminus.y"
                                        {
         (yyval.no) = criarNo("VAR", (yyvsp[-1].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
     }
-#line 1274 "cminus.tab.c"
+#line 1276 "cminus.tab.c"
     break;
 
   case 8: /* var_declaracao: tipo_especificador ID ABRECOLCHETE NUM FECHACOLCHETE PONTOVIRGULA  */
-#line 138 "cminus.y"
+#line 98 "cminus.y"
                                                                       {
         char numstr[16]; 
         sprintf(numstr, "%d", (yyvsp[-2].num));
@@ -1282,466 +1284,466 @@ yyreduce:
         adicionarFilho((yyval.no), (yyvsp[-5].no));
         adicionarFilho((yyval.no), criarNo("TAM", numstr, linha));
     }
-#line 1286 "cminus.tab.c"
+#line 1288 "cminus.tab.c"
     break;
 
   case 9: /* tipo_especificador: INT  */
-#line 149 "cminus.y"
+#line 109 "cminus.y"
          { (yyval.no) = criarNo("TIPO", "int", linha); }
-#line 1292 "cminus.tab.c"
+#line 1294 "cminus.tab.c"
     break;
 
   case 10: /* tipo_especificador: VOID  */
-#line 150 "cminus.y"
+#line 110 "cminus.y"
          { (yyval.no) = criarNo("TIPO", "void", linha); }
-#line 1298 "cminus.tab.c"
+#line 1300 "cminus.tab.c"
     break;
 
   case 11: /* fun_declaracao: tipo_especificador ID ABREPARENTESES parametros FECHAPARENTESES corpo_funcao  */
-#line 155 "cminus.y"
+#line 115 "cminus.y"
                                                                                  {
         (yyval.no) = criarNo("FUN_DEF", (yyvsp[-4].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-5].no));   /* tipo de retorno */
         adicionarFilho((yyval.no), (yyvsp[-2].no));   /* parametros */
         adicionarFilho((yyval.no), (yyvsp[0].no));   /* corpo */
     }
-#line 1309 "cminus.tab.c"
+#line 1311 "cminus.tab.c"
     break;
 
   case 12: /* parametros: VOID  */
-#line 165 "cminus.y"
+#line 125 "cminus.y"
          { (yyval.no) = criarNo("PARAMS", "void", linha); }
-#line 1315 "cminus.tab.c"
+#line 1317 "cminus.tab.c"
     break;
 
   case 13: /* parametros: parametro_lista  */
-#line 166 "cminus.y"
+#line 126 "cminus.y"
                     {
         (yyval.no) = criarNo("PARAMS", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1324 "cminus.tab.c"
+#line 1326 "cminus.tab.c"
     break;
 
   case 14: /* parametro_lista: parametro_lista VIRGULA parametro  */
-#line 174 "cminus.y"
+#line 134 "cminus.y"
                                       {
         (yyval.no) = criarNo("PARAM_LIST", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1334 "cminus.tab.c"
+#line 1336 "cminus.tab.c"
     break;
 
   case 15: /* parametro_lista: parametro  */
-#line 179 "cminus.y"
+#line 139 "cminus.y"
               { (yyval.no) = (yyvsp[0].no); }
-#line 1340 "cminus.tab.c"
+#line 1342 "cminus.tab.c"
     break;
 
   case 16: /* parametro: tipo_especificador ID  */
-#line 184 "cminus.y"
+#line 144 "cminus.y"
                           {
         (yyval.no) = criarNo("PARAM", (yyvsp[0].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1349 "cminus.tab.c"
+#line 1351 "cminus.tab.c"
     break;
 
   case 17: /* parametro: tipo_especificador ID ABRECOLCHETE FECHACOLCHETE  */
-#line 188 "cminus.y"
+#line 148 "cminus.y"
                                                      {
         (yyval.no) = criarNo("PARAM_ARRAY", (yyvsp[-2].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-3].no));
     }
-#line 1358 "cminus.tab.c"
+#line 1360 "cminus.tab.c"
     break;
 
   case 18: /* corpo_funcao: ABRECHAVE declaracao_lista comando_lista FECHACHAVE  */
-#line 196 "cminus.y"
+#line 156 "cminus.y"
                                                         {
         (yyval.no) = criarNo("CORPO", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1368 "cminus.tab.c"
+#line 1370 "cminus.tab.c"
     break;
 
   case 19: /* corpo_funcao: ABRECHAVE comando_lista FECHACHAVE  */
-#line 201 "cminus.y"
+#line 161 "cminus.y"
                                        {
         (yyval.no) = criarNo("CORPO", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1377 "cminus.tab.c"
+#line 1379 "cminus.tab.c"
     break;
 
   case 20: /* comando_lista: comando_lista comando  */
-#line 209 "cminus.y"
+#line 169 "cminus.y"
                           {
         (yyval.no) = criarNo("CMD_LIST", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1387 "cminus.tab.c"
+#line 1389 "cminus.tab.c"
     break;
 
   case 21: /* comando_lista: comando  */
-#line 214 "cminus.y"
+#line 174 "cminus.y"
             { (yyval.no) = (yyvsp[0].no); }
-#line 1393 "cminus.tab.c"
+#line 1395 "cminus.tab.c"
     break;
 
   case 22: /* comando_lista: %empty  */
-#line 215 "cminus.y"
+#line 175 "cminus.y"
                 {
         (yyval.no) = criarNo("CMD_LIST_VAZIA", NULL, linha);
     }
-#line 1401 "cminus.tab.c"
+#line 1403 "cminus.tab.c"
     break;
 
   case 23: /* comando: expressao_comando  */
-#line 222 "cminus.y"
+#line 182 "cminus.y"
                       {
         (yyval.no) = criarNo("CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1410 "cminus.tab.c"
+#line 1412 "cminus.tab.c"
     break;
 
   case 24: /* comando: selecao_comando  */
-#line 226 "cminus.y"
+#line 186 "cminus.y"
                     {
         (yyval.no) = criarNo("CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1419 "cminus.tab.c"
+#line 1421 "cminus.tab.c"
     break;
 
   case 25: /* comando: iteracao_comando  */
-#line 230 "cminus.y"
+#line 190 "cminus.y"
                      {
         (yyval.no) = criarNo("CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1428 "cminus.tab.c"
+#line 1430 "cminus.tab.c"
     break;
 
   case 26: /* comando: retorno_comando  */
-#line 234 "cminus.y"
+#line 194 "cminus.y"
                     {
         (yyval.no) = criarNo("CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1437 "cminus.tab.c"
+#line 1439 "cminus.tab.c"
     break;
 
   case 27: /* comando: bloco_comando  */
-#line 238 "cminus.y"
+#line 198 "cminus.y"
                   {
         (yyval.no) = (yyvsp[0].no);
     }
-#line 1445 "cminus.tab.c"
+#line 1447 "cminus.tab.c"
     break;
 
   case 28: /* bloco_comando: ABRECHAVE declaracao_lista comando_lista FECHACHAVE  */
-#line 245 "cminus.y"
+#line 205 "cminus.y"
                                                         {
         (yyval.no) = criarNo("BLOCO", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1455 "cminus.tab.c"
+#line 1457 "cminus.tab.c"
     break;
 
   case 29: /* bloco_comando: ABRECHAVE comando_lista FECHACHAVE  */
-#line 250 "cminus.y"
+#line 210 "cminus.y"
                                        {
         (yyval.no) = criarNo("BLOCO", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1464 "cminus.tab.c"
+#line 1466 "cminus.tab.c"
     break;
 
   case 30: /* bloco_comando: ABRECHAVE declaracao_lista FECHACHAVE  */
-#line 254 "cminus.y"
+#line 214 "cminus.y"
                                           {
         (yyval.no) = criarNo("BLOCO", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1473 "cminus.tab.c"
+#line 1475 "cminus.tab.c"
     break;
 
   case 31: /* bloco_comando: ABRECHAVE FECHACHAVE  */
-#line 258 "cminus.y"
+#line 218 "cminus.y"
                          {
         (yyval.no) = criarNo("BLOCO_VAZIO", NULL, linha);
     }
-#line 1481 "cminus.tab.c"
+#line 1483 "cminus.tab.c"
     break;
 
   case 32: /* expressao_comando: expressao PONTOVIRGULA  */
-#line 265 "cminus.y"
+#line 225 "cminus.y"
                            {
         (yyval.no) = criarNo("EXP_CMD", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1490 "cminus.tab.c"
+#line 1492 "cminus.tab.c"
     break;
 
   case 33: /* expressao_comando: PONTOVIRGULA  */
-#line 269 "cminus.y"
+#line 229 "cminus.y"
                  {
         (yyval.no) = criarNo("EXP_CMD_VAZIO", NULL, linha);
     }
-#line 1498 "cminus.tab.c"
+#line 1500 "cminus.tab.c"
     break;
 
   case 34: /* selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando ELSE comando  */
-#line 276 "cminus.y"
+#line 236 "cminus.y"
                                                                      {
         (yyval.no) = criarNo("IFELSE", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-4].no));  /* condicao */
         adicionarFilho((yyval.no), (yyvsp[-2].no));  /* bloco then */
         adicionarFilho((yyval.no), (yyvsp[0].no));  /* bloco else */
     }
-#line 1509 "cminus.tab.c"
+#line 1511 "cminus.tab.c"
     break;
 
   case 35: /* selecao_comando: IF ABREPARENTESES expressao FECHAPARENTESES comando  */
-#line 282 "cminus.y"
+#line 242 "cminus.y"
                                                         {
         (yyval.no) = criarNo("IF", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));  /* condicao */
         adicionarFilho((yyval.no), (yyvsp[0].no));  /* bloco then */
     }
-#line 1519 "cminus.tab.c"
+#line 1521 "cminus.tab.c"
     break;
 
   case 36: /* iteracao_comando: WHILE ABREPARENTESES expressao FECHAPARENTESES comando  */
-#line 291 "cminus.y"
+#line 251 "cminus.y"
                                                            {
         (yyval.no) = criarNo("WHILE", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));  /* condicao */
         adicionarFilho((yyval.no), (yyvsp[0].no));  /* corpo do loop */
     }
-#line 1529 "cminus.tab.c"
+#line 1531 "cminus.tab.c"
     break;
 
   case 37: /* retorno_comando: RETURN PONTOVIRGULA  */
-#line 300 "cminus.y"
+#line 260 "cminus.y"
                         {
         (yyval.no) = criarNo("RETURN", NULL, linha);
     }
-#line 1537 "cminus.tab.c"
+#line 1539 "cminus.tab.c"
     break;
 
   case 38: /* retorno_comando: RETURN expressao PONTOVIRGULA  */
-#line 303 "cminus.y"
+#line 263 "cminus.y"
                                   {
         (yyval.no) = criarNo("RETURN", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1546 "cminus.tab.c"
+#line 1548 "cminus.tab.c"
     break;
 
   case 39: /* expressao: var ATRIBUICAO expressao  */
-#line 311 "cminus.y"
+#line 271 "cminus.y"
                              {
         (yyval.no) = criarNo("ATRIB", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1556 "cminus.tab.c"
+#line 1558 "cminus.tab.c"
     break;
 
   case 40: /* expressao: simples_expressao  */
-#line 316 "cminus.y"
+#line 276 "cminus.y"
                       { (yyval.no) = (yyvsp[0].no); }
-#line 1562 "cminus.tab.c"
+#line 1564 "cminus.tab.c"
     break;
 
   case 41: /* simples_expressao: soma_expressao relacional soma_expressao  */
-#line 321 "cminus.y"
+#line 281 "cminus.y"
                                              {
         (yyval.no) = criarNo("REL", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[-1].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1573 "cminus.tab.c"
+#line 1575 "cminus.tab.c"
     break;
 
   case 42: /* simples_expressao: soma_expressao  */
-#line 327 "cminus.y"
+#line 287 "cminus.y"
                    { (yyval.no) = (yyvsp[0].no); }
-#line 1579 "cminus.tab.c"
+#line 1581 "cminus.tab.c"
     break;
 
   case 43: /* relacional: MENOR  */
-#line 332 "cminus.y"
+#line 292 "cminus.y"
                  { (yyval.no) = criarNo("OP", "<", linha); }
-#line 1585 "cminus.tab.c"
+#line 1587 "cminus.tab.c"
     break;
 
   case 44: /* relacional: MAIOR  */
-#line 333 "cminus.y"
+#line 293 "cminus.y"
                  { (yyval.no) = criarNo("OP", ">", linha); }
-#line 1591 "cminus.tab.c"
+#line 1593 "cminus.tab.c"
     break;
 
   case 45: /* relacional: MENORIGUAL  */
-#line 334 "cminus.y"
+#line 294 "cminus.y"
                  { (yyval.no) = criarNo("OP", "<=", linha); }
-#line 1597 "cminus.tab.c"
+#line 1599 "cminus.tab.c"
     break;
 
   case 46: /* relacional: MAIORIGUAL  */
-#line 335 "cminus.y"
+#line 295 "cminus.y"
                  { (yyval.no) = criarNo("OP", ">=", linha); }
-#line 1603 "cminus.tab.c"
+#line 1605 "cminus.tab.c"
     break;
 
   case 47: /* relacional: IGUAL  */
-#line 336 "cminus.y"
+#line 296 "cminus.y"
                  { (yyval.no) = criarNo("OP", "==", linha); }
-#line 1609 "cminus.tab.c"
+#line 1611 "cminus.tab.c"
     break;
 
   case 48: /* relacional: DIFERENTE  */
-#line 337 "cminus.y"
+#line 297 "cminus.y"
                  { (yyval.no) = criarNo("OP", "!=", linha); }
-#line 1615 "cminus.tab.c"
+#line 1617 "cminus.tab.c"
     break;
 
   case 49: /* soma_expressao: soma_expressao MAIS termo  */
-#line 342 "cminus.y"
+#line 302 "cminus.y"
                               {
         (yyval.no) = criarNo("SOMA", "+", linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1625 "cminus.tab.c"
+#line 1627 "cminus.tab.c"
     break;
 
   case 50: /* soma_expressao: soma_expressao MENOS termo  */
-#line 347 "cminus.y"
+#line 307 "cminus.y"
                                {
         (yyval.no) = criarNo("SUB", "-", linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1635 "cminus.tab.c"
+#line 1637 "cminus.tab.c"
     break;
 
   case 51: /* soma_expressao: termo  */
-#line 352 "cminus.y"
+#line 312 "cminus.y"
           { (yyval.no) = (yyvsp[0].no); }
-#line 1641 "cminus.tab.c"
+#line 1643 "cminus.tab.c"
     break;
 
   case 52: /* termo: termo VEZES fator  */
-#line 357 "cminus.y"
+#line 317 "cminus.y"
                       {
         (yyval.no) = criarNo("MULT", "*", linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1651 "cminus.tab.c"
+#line 1653 "cminus.tab.c"
     break;
 
   case 53: /* termo: termo DIVIDIDO fator  */
-#line 362 "cminus.y"
+#line 322 "cminus.y"
                          {
         (yyval.no) = criarNo("DIV", "/", linha);
         adicionarFilho((yyval.no), (yyvsp[-2].no));
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1661 "cminus.tab.c"
+#line 1663 "cminus.tab.c"
     break;
 
   case 54: /* termo: fator  */
-#line 367 "cminus.y"
+#line 327 "cminus.y"
           { (yyval.no) = (yyvsp[0].no); }
-#line 1667 "cminus.tab.c"
+#line 1669 "cminus.tab.c"
     break;
 
   case 55: /* fator: ABREPARENTESES expressao FECHAPARENTESES  */
-#line 372 "cminus.y"
+#line 332 "cminus.y"
                                              { (yyval.no) = (yyvsp[-1].no); }
-#line 1673 "cminus.tab.c"
+#line 1675 "cminus.tab.c"
     break;
 
   case 56: /* fator: var  */
-#line 373 "cminus.y"
+#line 333 "cminus.y"
         { (yyval.no) = (yyvsp[0].no); }
-#line 1679 "cminus.tab.c"
+#line 1681 "cminus.tab.c"
     break;
 
   case 57: /* fator: NUM  */
-#line 374 "cminus.y"
+#line 334 "cminus.y"
         {
         char numstr[16];
         sprintf(numstr, "%d", (yyvsp[0].num));
         (yyval.no) = criarNo("NUM", numstr, linha);
     }
-#line 1689 "cminus.tab.c"
+#line 1691 "cminus.tab.c"
     break;
 
   case 58: /* fator: ID ABREPARENTESES FECHAPARENTESES  */
-#line 379 "cminus.y"
+#line 339 "cminus.y"
                                       {
         (yyval.no) = criarNo("CHAMADA_FUNCAO", (yyvsp[-2].str), linha);
     }
-#line 1697 "cminus.tab.c"
+#line 1699 "cminus.tab.c"
     break;
 
   case 59: /* fator: ID ABREPARENTESES args_funcao FECHAPARENTESES  */
-#line 382 "cminus.y"
+#line 342 "cminus.y"
                                                   {
         (yyval.no) = criarNo("CHAMADA_FUNCAO", (yyvsp[-3].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1706 "cminus.tab.c"
+#line 1708 "cminus.tab.c"
     break;
 
   case 60: /* args_funcao: expressao  */
-#line 390 "cminus.y"
+#line 350 "cminus.y"
               {
         (yyval.no) = criarNo("ARGS", NULL, linha);
         adicionarFilho((yyval.no), (yyvsp[0].no));
     }
-#line 1715 "cminus.tab.c"
+#line 1717 "cminus.tab.c"
     break;
 
   case 61: /* args_funcao: args_funcao VIRGULA expressao  */
-#line 394 "cminus.y"
+#line 354 "cminus.y"
                                   {
         adicionarFilho((yyvsp[-2].no), (yyvsp[0].no));
         (yyval.no) = (yyvsp[-2].no);
     }
-#line 1724 "cminus.tab.c"
+#line 1726 "cminus.tab.c"
     break;
 
   case 62: /* var: ID  */
-#line 402 "cminus.y"
+#line 362 "cminus.y"
          {
         (yyval.no) = criarNo("ID", (yyvsp[0].str), linha);
     }
-#line 1732 "cminus.tab.c"
+#line 1734 "cminus.tab.c"
     break;
 
   case 63: /* var: ID ABRECOLCHETE expressao FECHACOLCHETE  */
-#line 405 "cminus.y"
+#line 365 "cminus.y"
                                               {
         (yyval.no) = criarNo("ID_ARRAY", (yyvsp[-3].str), linha);
         adicionarFilho((yyval.no), (yyvsp[-1].no));
     }
-#line 1741 "cminus.tab.c"
+#line 1743 "cminus.tab.c"
     break;
 
 
-#line 1745 "cminus.tab.c"
+#line 1747 "cminus.tab.c"
 
       default: break;
     }
@@ -1934,18 +1936,9 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 411 "cminus.y"
+#line 371 "cminus.y"
 
 
-/* ============================================================================
- * FUNCAO MAIN
- * 
- * Ponto de entrada do compilador. Executa as fases:
- * 1. Analise Sintatica (parser)
- * 2. Analise Semantica
- * 3. Imprime arvore sintatica e tabela de simbolos
- * ============================================================================
- */
 int main(int argc, char *argv[]) {
     if (argc == 2) {
         FILE *fp = fopen(argv[1], "r");
@@ -1962,9 +1955,22 @@ int main(int argc, char *argv[]) {
         printf("=== COMPILADOR C- ===\n\n");
         printf("Analisando arquivo: %s\n\n", argv[1]);
 
-        /* FASE 1: Analise Sintatica */
+        /* Reseta a tabela de tokens e erros */
+        resetarTabelaTokens();
+        resetarErrosLexicos();
+
+        /* FASE 0: Analise Lexica (Tabela de Tokens) */
+        printf("--- FASE 0: ANALISE LEXICA ---\n");
+
+        /* FASE 1: Analise Sintatica (constrói a árvore e captura tokens) */
         printf("--- FASE 1: ANALISE SINTATICA ---\n");
         int resultado = yyparse();
+        
+        /* Imprime a tabela de tokens após a análise sintática */
+        imprimirTabelaTokens();
+        
+        /* Imprime erros léxicos encontrados */
+        imprimirErrosLexicos();
         
         if (resultado == 0) {
             printf("Analise sintatica concluida com sucesso!\n\n");
